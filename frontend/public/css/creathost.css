@@ -1,0 +1,306 @@
+.cnh-overall{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overflow-y:scroll;
+}
+
+.cnh-header{
+    height: 80px;
+    width: 100%;
+    justify-content: space-between;
+    display: flex;
+}
+.cnh-header-right{
+    border: 1px solid black;
+    width: 70px;
+}
+.cnh-Q1{
+    width: 100%;
+    padding-bottom: 30px;
+    border-bottom: 1px solid gainsboro;
+}
+p.cnh-Q1-q{
+    margin-left: 10%;
+    margin-top: 20px;
+    width: 50%;
+    font-size: 30px;
+    font-weight: 500;
+    text-align: left;
+}
+div.cnh-Q1-answer{
+    display: flex;
+    flex-wrap: wrap;
+    width: 80%;
+    margin-left: 10%;
+}
+button.Q1-S{
+    background-color: white;
+    width: 30%;
+    min-width: 170px;
+    max-width: 300px;
+    height: 80px;
+    border-radius: 5px;
+    border: 1px solid rgb(168, 168, 168);
+    margin: 10px;
+    font-weight: 400;
+    letter-spacing: 0.4px;
+}
+button.Q1-S:hover{
+    border: 2px solid rgb(0, 0, 0);
+    transform: 0.5s;
+}
+.cnh-Q2{
+    width: 100%;
+}
+p.cnh-Q2-q{
+    margin: 0px;
+    padding: 0px;
+    margin-left: 10%;
+    margin-top: 20px;
+    width: 100%;
+    font-size: 20px;
+    font-weight: 500;
+    text-align: left;
+}
+p.cnh-Q2-q-sub{
+    font-family:system-ui;
+    padding: 0px;
+    margin: 5px 0px 20px 0px;
+    margin-left: 10%;
+    width: 70%;
+    font-size: 14px;
+    font-weight: 300;
+    text-align: left;
+    color: rgb(131, 131, 131);
+}
+div.cnh-Q2-answer{
+    display: flex;
+    flex-wrap: wrap;
+    width: 80%;
+    margin-left: 10%;
+    border: 1px solid rgb(178, 178, 178);
+    border-radius: 10px;
+}
+div.cnh-Q2-answer-row{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 5px 5px 0px 10px;
+    border-bottom: 1px solid rgb(178, 178, 178);
+}
+.cnh-Q2-answer-row:focus-within {
+    outline: 1.5px solid black;
+    border-radius: 10px;
+  }
+div.last{
+    border-bottom: 0px;
+}
+label.cnh-Q2-answer-label{
+    font-family:system-ui;
+    margin: 0px 0px 0px 0px;
+    padding: 0px;
+    color: rgb(110, 110, 110);
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.2px;
+}
+input.cnh-Q2-answer-input{
+    border: 0px;
+    padding-left: 5px;
+    margin: 0px 0px 5px 0px;
+    font-size: 14px;
+    font-family:system-ui;
+    font-weight: 300;
+    letter-spacing: 0.2px;
+}
+
+button.Q1-S{
+    background-color: white;
+    width: 30%;
+    min-width: 170px;
+    max-width: 300px;
+    height: 80px;
+    border-radius: 5px;
+    border: 1px solid rgb(168, 168, 168);
+    margin: 10px;
+    font-weight: 400;
+    letter-spacing: 0.4px;
+}
+button.Q1-S:hover{
+    border: 2px solid rgb(0, 0, 0);
+    transform: 0.5s;
+}
+input {
+    outline: none;
+}
+div.cnh-Q3-answer{
+    display: flex;
+    flex-wrap: wrap;
+    width: 80%;
+    margin-left: 10%;
+    border-radius: 10px;
+}
+div.cnh-Q3-answer-row{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    height: 75px;
+    padding: 5px 5px 0px 10px;
+    border-bottom: 1px solid rgb(178, 178, 178);
+    align-items: center;
+}
+label.cnh-Q3-answer-label{
+    font-family:system-ui;
+    margin: 0px;
+    padding: 0px;
+    color: rgb(0, 0, 0);
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+}
+input.cnh-Q3-answer-input{
+    border: 0px;
+    margin: 0px 0px 5px 0px;
+    font-size: 18px;
+    height: 40px;
+    width: 40px;
+    padding-left: 9px;
+    border-radius: 10px;
+    font-family:system-ui;
+    font-weight: 300;
+    letter-spacing: 0.2px;
+    border: 1px solid black;
+}
+p.cnh-Q4-q{
+    margin: 0px;
+    padding: 0px;
+    margin-left: 10%;
+    margin-top: 20px;
+    width: 80%;
+    font-size: 25px;
+    font-weight: 500;
+    text-align: left;
+}
+
+p.cnh-Q5-q{
+    margin: 0px;
+    padding: 0px;
+    margin-left: 10%;
+    margin-top: 20px;
+    width: 80%;
+    font-size: 25px;
+    font-weight: 500;
+    text-align: left;
+}
+  
+label.Q1-S,label.Q4-S {
+    display: flex; /* 使用 Flex 布局 */
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    width: 30%;
+    min-width: 170px;
+    max-width: 300px;
+    height: 80px;
+    border-radius: 5px;
+    border: 1px solid rgb(168, 168, 168);
+    margin: 10px;
+    font-weight: 400;
+    letter-spacing: 0.4px;
+}
+label.Q1-S:hover, label.Q4-S:hover{
+    border: 1.5px solid rgb(0, 0, 0);
+    transition: border 0.1s;
+}
+
+input.Q1-s, input.Q4-s{
+    display: none;
+}
+/* 当选中单选框时的样式 */
+input.Q1-s:checked + label.Q1-S {
+    border: 2px solid rgb(0, 0, 0);
+}
+
+/* 当选中单选框时的样式 */
+input.Q4-s:checked + label.Q4-S {
+    border: 2px solid rgb(0, 0, 0);
+    background-color: rgb(245, 245, 245);
+}
+
+textarea.cnh-Q5-answer{
+    resize: none;
+    width: 80%;
+    height: 50px;
+    border-radius: 5px;
+    padding:5px 10px 5px 10px;
+    outline: none;
+}
+p.length-detector {
+    font-weight: 500;
+    margin-left: 10%;
+    margin-top: 10px;
+    font-size: 12px;
+}
+p.cnh-Q6-answer{
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    font-size: 70px;
+    height: 100px;
+}
+p.cnh-Q6-answer-small{
+    font-weight: 500;
+    display: flex;
+    align-items: end;
+    font-size: 20px;
+    height: 100px;
+}
+input.cnh-Q6-answer{
+    font-weight: 500;
+    font-size: 70px;
+    height: 100px;
+    width: 240px;
+    border: 0px;
+}
+div.cnh-Q6-answer{
+    justify-content: center;
+    display: flex;
+    width: 100%;
+    height: 100px;
+}
+.hidden{
+    display: none;
+}
+button.upload-button{
+    border: 0px;
+    color: rgb(94, 94, 94);
+    background-color: white;
+    text-decoration: underline;
+}
+button.upload-button:hover{
+    color: rgb(20, 20, 20);
+}
+div.cnh-Q7-answer{
+    display: flex;
+    margin-left: 15%;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    width: 70%;
+    height: 300px;
+    border: 1px dashed black;
+}
+img.cnh-Q7-answer{
+    margin-top: 10px;
+    display: flex;
+    margin-left: 15%;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    width: 70%;
+    object-fit: cover;
+    border: 1px dashed black;
+}

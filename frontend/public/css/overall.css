@@ -1,0 +1,39 @@
+p.error-text{
+    margin: 0px 0px 0px 20px;
+}
+div.error-message{
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+    position: fixed;
+    font-size: 20px;
+    height: 50px;
+    color: #c60000;
+    letter-spacing: 1px;
+    top: 5%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    padding: 0px;
+    border-radius: 10px;
+    border: 1px solid rgb(217, 217, 217);
+}
+.close-button {
+    border-radius: 30px;
+    font-size: 15px;
+    margin: 0px 10px 0px 20px;
+    color: rgb(142, 142, 142);
+    border: 1px #ffffff solid;
+    background-color: rgb(219, 219, 219);
+    cursor: pointer;
+  }
+
+.remain{
+    flex:1;
+}
+.max-width-170{
+    width: 170px;
+}
+.max-width-100{
+    width: 120px;
+}
