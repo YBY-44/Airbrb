@@ -1,33 +1,121 @@
 import config from '../config.json';
+import React, { useState } from 'react';
+import { styled } from '@mui/material';
 const port = config.BACKEND_PORT;
 
-export const errorMessage = (text) => {
+export const Datetostring = (inputDate: Date) => {
+  if (!inputDate) {
+    return '';
+  }
+  console.log(inputDate);
+  const options = {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+  } as Intl.DateTimeFormatOptions;
+  return inputDate.toLocaleDateString('en-US', options);
+};
+
+type HoverImageProps = {
+  src: string;
+  alt: string;
+};
+
+const CnhQ7Answer = styled('img')({
+  marginTop: '10px',
+  display: 'flex',
+  height: '99%',
+  objectFit: 'cover',
+  border: '1px dashed black',
+  aspectRatio: '1 / 1',
+  '&:hover': {
+    transition: '0.5s',
+    opacity: '0.5',
+    borderRadius: '100px',
+    objectFit: 'cover',
+    backgroundColor: 'black',
+  },
+});
+export const HoverImage = ({ src, alt }: HoverImageProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const MouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const MouseLeave = () => {
+    setIsHovered(false);
+  };
+
+  return (
+    <CnhQ7Answer
+      src={isHovered ? '/img/DEL.png' : src}
+      alt={alt}
+      onMouseEnter={MouseEnter}
+      onMouseLeave={MouseLeave}
+    />
+  );
+};
+
+const ErrorText = styled('p')({
+  margin: '0px 0px 0px 20px',
+});
+const ErrorMessage = styled('div')({
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  display: 'flex',
+  position: 'fixed',
+  fontSize: '20px',
+  height: '50px',
+  color: '#c60000',
+  letterSpacing: '1px',
+  top: '5%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  backgroundColor: '#ffffff',
+  padding: '0px',
+  borderRadius: '10px',
+  border: '1px solid rgb(217, 217, 217)',
+});
+const ErrorCloseBtn = styled('button')({
+  borderRadius: '30px',
+  fontSize: '15px',
+  margin: '0px 10px 0px 20px',
+  color: 'rgb(142, 142, 142)',
+  border: '1px #ffffff solid',
+  backgroundColor: 'rgb(219, 219, 219)',
+  cursor: 'pointer',
+});
+export const errorMessage = (text: string) => {
   const bodyMain = document.querySelector('body');
-  const div = document.createElement('div');
-  const para = document.createElement('p');
-  para.textContent = text;
-  para.className = 'error-text';
-  div.className = 'error-message';
-  const btn = document.createElement('button');
-  btn.innerText = 'X';
-  btn.className = 'close-button';
-  div.appendChild(para);
-  div.appendChild(btn);
-  bodyMain.appendChild(div);
-  // when click close the message would be removed
-  btn.addEventListener('click', () => {
-    bodyMain.removeChild(div);
-  });
-  // when press 'x' the message would be removed
-  window.addEventListener('keydown', (event) => {
-    if (event.key === 'x' && bodyMain.contains(div)) {
-      bodyMain.removeChild(div);
-    }
-  });
+  const div = document.getElementById('errorMessa');
+  const btn = document.getElementById('clsbtn');
+  const conponment = (
+    <ErrorMessage id='errorMessa'>
+      <ErrorText>{text}</ErrorText>
+      <ErrorCloseBtn id='clsbtn'>X</ErrorCloseBtn>
+    </ErrorMessage>
+  );
+  if (btn) {
+    // when click close the message would be removed
+    // when press 'x' the message would be removed
+    btn.addEventListener('click', () => {
+      return null;
+    });
+    window.addEventListener('keydown', (event) => {
+      if (bodyMain && div) {
+        if (event.key === 'x' && bodyMain.contains(div)) {
+          return null;
+        }
+      }
+      return conponment;
+    });
+  }
+  return conponment;
 };
 
 // all post request send by this question
-export const callAPIpost = (path, inputdata) => {
+export const callAPIpost = (path: string, inputdata: object) => {
   return new Promise((resolve, reject) => {
     fetch('http://localhost:' + String(port) + '/' + String(path), {
       method: 'POST',
@@ -40,10 +128,10 @@ export const callAPIpost = (path, inputdata) => {
           return response.json();
         } else if (response.status === 400) {
           const errorReason = 'info';
-          reject(errorReason);
+          return reject(errorReason);
         } else {
           const errorReason = 'net';
-          reject(errorReason);
+          return reject(errorReason);
         }
       })
       .then((body) => {
@@ -56,7 +144,11 @@ export const callAPIpost = (path, inputdata) => {
 };
 
 // call post request with token send by this function
-export const CallAPIPostWithToken = (path, inputdata, token) => {
+export const CallAPIPostWithToken = (
+  path: string,
+  inputdata: object,
+  token: string
+) => {
   return new Promise((resolve, reject) => {
     fetch('http://localhost:' + String(port) + '/' + String(path), {
       method: 'POST',
@@ -72,16 +164,17 @@ export const CallAPIPostWithToken = (path, inputdata, token) => {
           return response.json();
         } else if (response.status === 400) {
           const errorReason = 'info';
-          reject(errorReason);
+          return reject(errorReason);
         } else if (response.status === 403) {
           const errorReason = 'access';
-          reject(errorReason);
+          return reject(errorReason);
         } else {
           const errorReason = 'net';
-          reject(errorReason);
+          return reject(errorReason);
         }
       })
       .then((body) => {
+        console.log(body);
         resolve(body);
       })
       .catch((err) => {
@@ -91,7 +184,7 @@ export const CallAPIPostWithToken = (path, inputdata, token) => {
 };
 
 //  all put request with token send by this message
-export const callAPIput = (path, inputdata, token) => {
+export const callAPIput = (path: string, inputdata: object, token: string) => {
   return new Promise((resolve, reject) => {
     fetch('http://localhost:' + String(port) + '/' + String(path), {
       method: 'PUT',
@@ -104,7 +197,7 @@ export const callAPIput = (path, inputdata, token) => {
       .then((response) => {
         if (response.ok) {
           console.log('success');
-          return response.json();
+          resolve(response.json());
         } else if (response.status === 400) {
           const errorReason = 'info';
           reject(errorReason);
@@ -126,7 +219,7 @@ export const callAPIput = (path, inputdata, token) => {
 };
 
 // all GET request send by this function
-export const callAPIget = (path, token) => {
+export const callAPIget = (path: string, token: string) => {
   return new Promise((resolve, reject) => {
     fetch('http://localhost:' + String(port) + '/' + String(path), {
       method: 'GET',
@@ -140,13 +233,13 @@ export const callAPIget = (path, token) => {
           return response.json();
         } else if (response.status === 400) {
           const errorReason = 'info';
-          reject(errorReason);
+          return reject(errorReason);
         } else if (response.status === 403) {
           const errorReason = 'access';
-          reject(errorReason);
+          return reject(errorReason);
         } else {
           const errorReason = 'net';
-          reject(errorReason);
+          return reject(errorReason);
         }
       })
       .then((body) => {
@@ -158,7 +251,7 @@ export const callAPIget = (path, token) => {
   });
 };
 // All delete request send by this function
-export const callAPIdelete = (path, token) => {
+export const callAPIdelete = (path: string, token: object) => {
   return new Promise((resolve, reject) => {
     fetch('http://localhost:' + String(port) + '/' + String(path), {
       method: 'DELETE',
@@ -172,13 +265,13 @@ export const callAPIdelete = (path, token) => {
           return response.json();
         } else if (response.status === 400) {
           const errorReason = 'info';
-          reject(errorReason);
+          return reject(errorReason);
         } else if (response.status === 403) {
           const errorReason = 'access';
-          reject(errorReason);
+          return reject(errorReason);
         } else {
           const errorReason = 'net';
-          reject(errorReason);
+          return reject(errorReason);
         }
       })
       .then((body) => {
