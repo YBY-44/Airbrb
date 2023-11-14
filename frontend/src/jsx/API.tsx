@@ -1,8 +1,61 @@
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import config from '../config.json';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material';
 const port = config.BACKEND_PORT;
+interface ColorAlertsProps {
+  type: string;
+  content: string;
+}
 
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) => (
+  <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />
+));
+Alert.displayName = 'Alert';
+
+interface GlobalSnackbarProps {
+  message: string | null;
+  severity: 'success' | 'error' | 'warning' | 'info';
+}
+
+export const GlobalSnackbar: React.FC<GlobalSnackbarProps> = ({
+  message,
+  severity,
+}) => {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (message) {
+      setOpen(true);
+    }
+  }, [message]);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+      <Alert onClose={handleClose} severity={severity} sx={{ width: '100%' }}>
+        {message}
+      </Alert>
+    </Snackbar>
+  );
+};
+
+export const GetDistance = (startDate: Date | null, endDate: Date | null) => {
+  if (startDate && endDate) {
+    const date1 = new Date(startDate);
+    const date2 = new Date(endDate);
+    date1.setUTCHours(0, 0, 0, 0);
+    date2.setUTCHours(0, 0, 0, 0);
+    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
+    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    return daysDiff;
+  }
+  return 0;
+};
 export const Datetostring = (inputDate: Date) => {
   if (!inputDate) {
     return '';

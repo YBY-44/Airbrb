@@ -24,7 +24,7 @@ import {
   Route,
   Routes,
 } from 'react-router-dom';
-import { callAPIpost, CallAPIPostWithToken, errorMessage } from './jsx/API';
+import { callAPIpost, CallAPIPostWithToken, GlobalSnackbar } from './jsx/API';
 import {
   SmallHostPage,
   LargeHostPage,
@@ -33,9 +33,9 @@ import {
 } from './jsx/Host';
 import { PublishPage } from './jsx/publish';
 import TextField from '@mui/material/TextField';
-import { GetAllListing } from './jsx/get_all_listing';
+import { GetAllListing, GetAllOwnerBooking } from './jsx/get_all_listing';
 import InputAdornment from '@mui/material/InputAdornment';
-import { styled } from '@mui/material';
+import { styled, Alert } from '@mui/material';
 // when meet error then show the error
 export const meetError = (error: string) => {
   console.log(error);
@@ -51,7 +51,6 @@ export const meetError = (error: string) => {
       errorText = 'Network error! Please try again.';
       break;
   }
-  errorMessage(String(errorText));
   return errorText;
 };
 
@@ -155,9 +154,33 @@ interface LogoutModels {
   isOpen: boolean;
   close: () => void;
 }
-export const LogoutModelHost: React.FC<LogoutModels> = ({ isOpen, close }) => {
+export const LoginModelDetail: React.FC<LoginModels> = ({ isOpen, close }) => {
   const navigate = useNavigate();
   console.log(isOpen);
+  const showLoginPage = () => {
+    close();
+    navigate('/login');
+  };
+  const showRegistPage = () => {
+    close();
+    navigate('/register');
+  };
+  const componment = (
+    <div>
+      <LogoutHidden id='log' role='group' aria-label='Vertical button group'>
+        <HiddenBtnBlack type='button' onClick={showLoginPage}>
+          Log in
+        </HiddenBtnBlack>
+        <HiddenBtn type='button' onClick={showRegistPage}>
+          Sign up
+        </HiddenBtn>
+      </LogoutHidden>
+    </div>
+  );
+  return isOpen ? componment : null;
+};
+export const LogoutModelHost: React.FC<LogoutModels> = ({ isOpen, close }) => {
+  const navigate = useNavigate();
   const LogoutClick = () => {
     close();
     let token = localStorage.getItem('token');
@@ -189,7 +212,6 @@ export const LogoutModelHost: React.FC<LogoutModels> = ({ isOpen, close }) => {
 
 export const LogoutModel: React.FC<LogoutModels> = ({ isOpen, close }) => {
   const navigate = useNavigate();
-  console.log(isOpen);
   const LogoutClick = () => {
     close();
     let token = localStorage.getItem('token');
@@ -702,8 +724,9 @@ const SmallHomeCenter = styled('div')({
   paddingTop: '20px',
   display: 'flex',
   height: 'calc(100vh - 140px)',
-  justifyContent: 'center',
-  overflow: 'hidden',
+  flexDirection: 'column',
+  alignItems: 'center',
+  overflowX: 'hidden',
   overflowY: 'scroll',
 });
 
@@ -758,7 +781,7 @@ const FilterBlock = styled('div')({
   overflowX: 'hidden',
 });
 const FliterCenterPart = styled('div')({
-  height: 'calc(100vh - 210px)',
+  height: 'calc(100vh - 185px)',
   marginTop: '10px',
   display: 'flex',
   flexDirection: 'column',
@@ -770,11 +793,10 @@ const FliterCenterPart = styled('div')({
   borderBottom: '1px solid rgb(200,200,200)',
 });
 const FliterBottomPart = styled('div')({
-  height: '90px',
-  marginTop: '10px',
+  height: '70px',
+  marginTop: '15px',
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center',
   backgroundColor: 'white',
   width: '100%',
   overflowY: 'scroll',
@@ -806,7 +828,7 @@ const BedTextField = ({ ...props }) => {
 const Filtertitle = styled('p')({
   textAlign: 'center',
   fontWeight: '700',
-  fontSize: '20px',
+  fontSize: '16px',
   width: '100%',
   marginTop: '10px',
 });
@@ -819,13 +841,13 @@ const Filterblock = styled('div')({
 });
 const FilterT1 = styled('div')({
   fontWeight: '500',
-  fontSize: '25px',
+  fontSize: '20px',
   padding: '0px',
   margin: '0px',
 });
 const FilterT2 = styled('div')({
   fontWeight: '300',
-  fontSize: '16px',
+  fontSize: '14px',
   padding: '0px 0px 30px 0px',
   margin: '0px',
 });
@@ -880,8 +902,8 @@ const FilterLeftBtn = styled('button')({
   backgroundColor: 'white',
   border: '0px',
   borderRadius: '10px',
-  fontSize: '20px',
-  height: '55px',
+  fontSize: '16px',
+  height: '40px',
   width: '120px',
   fontWeight: '500',
   letterSpacing: '0.5px',
@@ -896,9 +918,9 @@ const FilterRightBtn = styled('button')({
   color: 'white',
   border: '0px',
   borderRadius: '10px',
-  height: '60px',
+  height: '45px',
   width: '200px',
-  fontSize: '20px',
+  fontSize: '16px',
   fontWeight: '500',
   '&:hover': {
     backgroundColor: 'rgb(0, 0, 0)',
@@ -1277,6 +1299,9 @@ const SmallHomePage = () => {
         ></FilterBar>
       </SmallHomeHead>
       <SmallHomeCenter>
+        <Routes>
+          <Route path='/user/*' element={<GetAllOwnerBooking />} />
+        </Routes>
         <GetAllListing key={reload.toString()} />
       </SmallHomeCenter>
       <SmallHomeBottom>
@@ -1436,8 +1461,10 @@ export const LargeProfileRightImage = styled('img')({
 export const LargeHomeCenter = styled('div')({
   width: '100%',
   display: 'flex',
-  justifyContent: 'center',
-  overflow: 'hidden',
+  flexDirection: 'column',
+  alignItems: 'center',
+  overflowX: 'hidden',
+  overflowY: 'scroll',
 });
 const LargeHomePage = () => {
   const FilterValue = useContext(AppContext);
@@ -1557,6 +1584,9 @@ const LargeHomePage = () => {
         <LargeFilter onClick={openfilter}>Filter</LargeFilter>
       </ContainerForFilter>
       <LargeHomeCenter>
+        <Routes>
+          <Route path='/user/*' element={<GetAllOwnerBooking />} />
+        </Routes>
         <GetAllListing key={reload.toString()} />
       </LargeHomeCenter>
     </LargeHomePagecss>
@@ -1579,6 +1609,16 @@ interface FilterComp {
   setMinbed: (value: number) => void;
   setMaxbed: (value: number) => void;
   setcontent: (value: string) => void;
+}
+interface SnackbarData {
+  snackbarData: {
+    severity: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+  };
+  setOpenSnackbar: (value: {
+    severity: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+  }) => void;
 }
 export const AppContext = createContext<FilterComp | null>(null);
 const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -1613,7 +1653,37 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
 };
-const App = () => {
+type SnackbarDatas = {
+  severity: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+};
+export const ErrorContext = createContext<SnackbarData | null>(null);
+const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [snackbarData, setOpenSnackbar] = useState<SnackbarDatas>({
+    severity: 'success',
+    message: '',
+  });
+  const contextValue = {
+    snackbarData,
+    setOpenSnackbar,
+  };
+
+  return (
+    <ErrorContext.Provider value={contextValue}>
+      {children}
+    </ErrorContext.Provider>
+  );
+};
+
+const MainContent = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const {
+    snackbarData
+  } = ErrorValue;
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   let layoutComponentHost;
   let LayoutComponentHomeWrapper;
@@ -1632,38 +1702,63 @@ const App = () => {
   if (windowWidth > 760) {
     layoutComponentHost = <LargeHostPage />;
     LayoutComponentHomeWrapper = <AppProvider>{<LargeHomePage />}</AppProvider>;
-    LayoutDetail = <AppProvider><ListingDetailLarge /></AppProvider>;
+    LayoutDetail = (
+      <AppProvider>
+        <ListingDetailLarge />
+      </AppProvider>
+    );
   } else {
     layoutComponentHost = <SmallHostPage />;
     LayoutComponentHomeWrapper = <AppProvider>{<SmallHomePage />}</AppProvider>;
-    LayoutDetail = <AppProvider><ListingDetailSmall /></AppProvider>;
+    LayoutDetail = (
+      <AppProvider>
+        <ListingDetailSmall />
+      </AppProvider>
+    );
   }
   return (
-    <Router>
-      <Routes>
-        <Route path='/login' element={<LogPage />} />
-        <Route path='/register' element={<RegistPage />} />
-        <Route path='*' element={NaN} />
-      </Routes>
-      <Routes>
-        <Route
-          path='/user/:userId/CreateListing/*'
-          element={<CreateHosting />}
-        />
-        <Route
-          path='/user/:userId/hosting/edit/:HostingId'
-          element={<EditHosting />}
-        />
-        <Route
-          path='/user/:userId/hosting/publish/:HostingId'
-          element={<PublishPage />}
-        />
-        <Route path='/user/:userId/hosting/*' element={layoutComponentHost} />
-        <Route path='/user/:userId/listing/:HostingId/*' element={LayoutDetail} />
-        <Route path='/listing/:HostingId/*'element={LayoutDetail}/>
-        <Route path='*' element={LayoutComponentHomeWrapper} />
-      </Routes>
-    </Router>
+    <div>
+      <GlobalSnackbar
+        severity={snackbarData.severity}
+        message={snackbarData.message}
+      />
+      <Router>
+        <Routes>
+          <Route path='/login' element={<LogPage />} />
+          <Route path='/register' element={<RegistPage />} />
+          <Route path='*' element={NaN} />
+        </Routes>
+        <Routes>
+          <Route
+            path='/user/:userId/CreateListing/*'
+            element={<CreateHosting />}
+          />
+          <Route
+            path='/user/:userId/hosting/edit/:HostingId'
+            element={<EditHosting />}
+          />
+          <Route
+            path='/user/:userId/hosting/publish/:HostingId'
+            element={<PublishPage />}
+          />
+          <Route path='/user/:userId/hosting/*' element={layoutComponentHost} />
+          <Route
+            path='/user/:userId/listing/:HostingId/*'
+            element={LayoutDetail}
+          />
+          <Route path='/listing/:HostingId/*' element={LayoutDetail} />
+          <Route path='*' element={LayoutComponentHomeWrapper} />
+        </Routes>
+      </Router>
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <ErrorProvider>
+      <MainContent />
+    </ErrorProvider>
   );
 };
 

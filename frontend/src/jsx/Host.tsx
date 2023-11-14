@@ -8,6 +8,7 @@ import React, {
   useRef,
   ChangeEvent,
   LabelHTMLAttributes,
+  useContext,
 } from 'react';
 import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -26,6 +27,7 @@ import {
   SmallButtomButton1,
   SwitchContent,
   SmallHomeBottom,
+  ErrorContext,
 } from '../App';
 import {
   callAPIget,
@@ -33,7 +35,11 @@ import {
   callAPIput,
   HoverImage,
 } from './API';
-import { GetAllOwnerListing } from './get_all_listing';
+import { GetAllOwnerListing, GetAllBookingRequest } from './get_all_listing';
+type SnackbarData = {
+  severity: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+};
 export const getAllReservations = () => {
   console.log('111');
 };
@@ -90,7 +96,9 @@ export const ReservingContent = () => {
       <CenterTitleHost>
         <HeaderSubtxtHost>Your Resveration</HeaderSubtxtHost>
       </CenterTitleHost>
-      <HostContent></HostContent>
+      <HostContent>
+        <GetAllBookingRequest />
+      </HostContent>
     </ContentCenterHost>
   );
 };
@@ -142,23 +150,192 @@ interface ConfirmCreatProps {
   close: () => void;
 }
 
+const CfmAll = styled('div')({
+  width: '100%',
+  height: '100%',
+  position: 'absolute',
+  zIndex: '3',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+const CfmBack = styled('div')({
+  zIndex: '1',
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'black',
+  opacity: '0.3',
+});
+const CfmContent = styled('div')({
+  position: 'absolute',
+  zIndex: '4',
+  width: '80%',
+  height: '600px',
+  backgroundColor: 'rgb(255, 255, 255)',
+  borderRadius: '10px',
+  boxShadow: '0px 1px 10px 1px rgba(42, 42, 42, 0.5)',
+});
+const CfmHeight = styled('div')({
+  width: '100%',
+  height: '50px',
+  display: 'flex',
+  alignItems: 'center',
+  borderBottom: '1px solid rgb(200, 200, 200)',
+});
+const CfmClose = styled('p')({
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '30px !important',
+  margin: '0px',
+  marginLeft: '10px',
+  cursor: 'pointer',
+  display: 'flex',
+  border: '1px solid black',
+  width: '70px',
+  fontWeight: '500',
+  letterSpacing: '0.2px',
+  backgroundColor: 'rgb(255, 255, 255)',
+  // margin: '20px 0px 10px 0px',
+  padding: '0px 10px 0px 10px',
+  borderRadius: '20px',
+});
+const CfmCenterContent = styled('div')({
+  position: 'relative',
+  fontSize: '20px',
+  margin: '0px',
+  padding: '20px 0px 0px 0px',
+  height: '480px',
+  overflowY: 'scroll',
+  textAlign: 'center',
+  color: 'rgb(0, 0, 0)',
+});
+const CfmRow = styled('div')({
+  display: 'flex',
+  justifyContent: 'space-between',
+  height: '40px',
+  margin: '20px 10% 0px 10%',
+  borderBottom: '1px solid rgb(220, 220, 220)',
+});
+const CfmRowP = styled('div')({
+  display: 'flex',
+  justifyContent: 'space-between',
+  margin: '20px 10% 0px 10%',
+  borderBottom: '1px solid rgb(220, 220, 220)',
+  '@media (max-width: 480px)': {
+    flexDirection: 'column',
+  },
+  '@media (min-width: 480px)': {
+    flexDirection: 'row',
+  },
+});
+const CfmRowCol = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  height: 'auto',
+  margin: '10px 10% 0px 10%',
+  paddingBottom: '10px',
+  borderBottom: '1px solid rgb(220, 220, 220)',
+});
+const CfmLefttxt = styled('p')({
+  textAlign: 'left',
+  margin: '0px',
+  marginBottom: '10px',
+  fontSize: '15px',
+  color: 'rgb(42, 42, 42)',
+});
+const CfmRightttxt = styled('p')({
+  textAlign: 'left',
+  margin: '0px 10px 10px 10px',
+  fontSize: '14px',
+  color: 'rgb(85, 85, 85)',
+  maxWidth: '100%',
+  wordWrap: 'break-word',
+});
+const CfmValuettxt = styled('p')({
+  textAlign: 'left',
+  margin: '0px',
+  marginLeft: '10px',
+  fontSize: '13px',
+  color: 'rgb(0, 0, 0)',
+  width: 'auto',
+  fontWeight: '500',
+});
+const CfmGuest = styled('div')({
+  width: '100%',
+  display: 'flex',
+  flexWrap: 'wrap',
+  '@media (max-width: 480px)': {
+    justifyContent: 'left',
+  },
+  '@media (min-width: 480px)': {
+    justifyContent: 'space-around',
+  },
+});
+const CfmFac = styled('div')({
+  width: '100%',
+  display: 'flex',
+  flexWrap: 'wrap',
+  '@media (max-width: 700px)': {
+    justifyContent: 'left',
+  },
+  '@media (min-width: 700px)': {
+    justifyContent: 'space-around',
+  },
+});
+const CfmBottom = styled('div')({
+  width: '100%',
+  display: 'flex',
+  height: '50px',
+  justifyContent: 'center',
+});
+const CfmTitleTxt = styled('p')({
+  width: 'auto',
+  textAlign: 'left',
+  margin: '0px',
+  fontSize: '13px',
+  color: 'rgb(54, 54, 54)',
+});
+const CfmGuestBlock = styled('div')({
+  margin: '0px 10px 0px 0px',
+  alignItems: 'center',
+  width: 'auto',
+  display: 'flex',
+});
+const CfmHead = styled('p')({
+  fontSize: '20px',
+  margin: '20px 60px 0px 0px',
+  width: '100%',
+  height: '50px',
+  textAlign: 'center',
+  letterSpacing: '0.2px',
+  color: 'rgb(48, 48, 48)',
+});
 export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
   data,
   isOpen,
   close,
 }) => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { snackbarData, setOpenSnackbar } = ErrorValue;
   const navigate = useNavigate();
   const CreatHosting = () => {
     const token = localStorage.getItem('token') || '';
     CallAPIPostWithToken('listings/new', data, token)
       .then(() => {
+        setOpenSnackbar({ severity: 'success', message: 'Creat successful!' });
         console.log('success');
-        close();
         const userId = localStorage.getItem('LoggedUserEmail');
         navigate(`/user/${userId}/hosting/myhosting`);
-        alert('Creat hosting successful !');
+        close();
       })
-      .catch((error) => meetError(error));
+      .catch((error) => {
+        setOpenSnackbar({ severity: 'success', message: meetError(error) });
+      });
   };
 
   let conponment = <div></div>;
@@ -189,167 +366,6 @@ export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
     if (trueKeys.length === 0) {
       trueKeys.push('No additional Facilities');
     }
-    const CfmAll = styled('div')({
-      width: '100%',
-      height: '100%',
-      position: 'absolute',
-      zIndex: '3',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    });
-    const CfmBack = styled('div')({
-      zIndex: '1',
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'black',
-      opacity: '0.3',
-    });
-    const CfmContent = styled('div')({
-      position: 'absolute',
-      zIndex: '4',
-      width: '80%',
-      height: '600px',
-      backgroundColor: 'rgb(255, 255, 255)',
-      borderRadius: '10px',
-      boxShadow: '0px 1px 10px 1px rgba(42, 42, 42, 0.5)',
-    });
-    const CfmHeight = styled('div')({
-      width: '100%',
-      height: '50px',
-      display: 'flex',
-      alignItems: 'center',
-      borderBottom: '1px solid rgb(200, 200, 200)',
-    });
-    const CfmClose = styled('p')({
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '30px !important',
-      margin: '0px',
-      marginLeft: '10px',
-      cursor: 'pointer',
-      display: 'flex',
-      border: '1px solid black',
-      width: '70px',
-      fontWeight: '500',
-      letterSpacing: '0.2px',
-      backgroundColor: 'rgb(255, 255, 255)',
-      // margin: '20px 0px 10px 0px',
-      padding: '0px 10px 0px 10px',
-      borderRadius: '20px',
-    });
-    const CfmCenterContent = styled('div')({
-      position: 'relative',
-      fontSize: '20px',
-      margin: '0px',
-      padding: '20px 0px 0px 0px',
-      height: '480px',
-      overflowY: 'scroll',
-      textAlign: 'center',
-      color: 'rgb(0, 0, 0)',
-    });
-    const CfmRow = styled('div')({
-      display: 'flex',
-      justifyContent: 'space-between',
-      height: '40px',
-      margin: '20px 10% 0px 10%',
-      borderBottom: '1px solid rgb(220, 220, 220)',
-    });
-    const CfmRowP = styled('div')({
-      display: 'flex',
-      justifyContent: 'space-between',
-      margin: '20px 10% 0px 10%',
-      borderBottom: '1px solid rgb(220, 220, 220)',
-      '@media (max-width: 480px)': {
-        flexDirection: 'column',
-      },
-      '@media (min-width: 480px)': {
-        flexDirection: 'row',
-      },
-    });
-    const CfmRowCol = styled('div')({
-      display: 'flex',
-      flexDirection: 'column',
-      height: 'auto',
-      margin: '10px 10% 0px 10%',
-      paddingBottom: '10px',
-      borderBottom: '1px solid rgb(220, 220, 220)',
-    });
-    const CfmLefttxt = styled('p')({
-      textAlign: 'left',
-      margin: '0px',
-      marginBottom: '10px',
-      fontSize: '15px',
-      color: 'rgb(42, 42, 42)',
-    });
-    const CfmRightttxt = styled('p')({
-      textAlign: 'left',
-      margin: '0px 10px 10px 10px',
-      fontSize: '14px',
-      color: 'rgb(85, 85, 85)',
-      maxWidth: '100%',
-      wordWrap: 'break-word',
-    });
-    const CfmValuettxt = styled('p')({
-      textAlign: 'left',
-      margin: '0px',
-      marginLeft: '10px',
-      fontSize: '13px',
-      color: 'rgb(0, 0, 0)',
-      width: 'auto',
-      fontWeight: '500',
-    });
-    const CfmGuest = styled('div')({
-      width: '100%',
-      display: 'flex',
-      flexWrap: 'wrap',
-      '@media (max-width: 480px)': {
-        justifyContent: 'left',
-      },
-      '@media (min-width: 480px)': {
-        justifyContent: 'space-around',
-      },
-    });
-    const CfmFac = styled('div')({
-      width: '100%',
-      display: 'flex',
-      flexWrap: 'wrap',
-      '@media (max-width: 700px)': {
-        justifyContent: 'left',
-      },
-      '@media (min-width: 700px)': {
-        justifyContent: 'space-around',
-      },
-    });
-    const CfmBottom = styled('div')({
-      width: '100%',
-      display: 'flex',
-      height: '50px',
-      justifyContent: 'center',
-    });
-    const CfmTitleTxt = styled('p')({
-      width: 'auto',
-      textAlign: 'left',
-      margin: '0px',
-      fontSize: '13px',
-      color: 'rgb(54, 54, 54)',
-    });
-    const CfmGuestBlock = styled('div')({
-      margin: '0px 10px 0px 0px',
-      alignItems: 'center',
-      width: 'auto',
-      display: 'flex',
-    });
-    const CfmHead = styled('p')({
-      fontSize: '20px',
-      margin: '20px 60px 0px 0px',
-      width: '100%',
-      height: '50px',
-      textAlign: 'center',
-      letterSpacing: '0.2px',
-      color: 'rgb(48, 48, 48)',
-    });
     conponment = (
       <CfmAll>
         <CfmBack></CfmBack>
@@ -2074,48 +2090,46 @@ export const EditHosting = () => {
     listing: ListingContent;
   };
   useEffect(() => {
-    if (!data) {
-      callAPIget('listings/' + HostingId, token)
-        .then((response) => {
-          const Responsedata = response as ApiResponse;
-          console.log(Responsedata.listing);
-          setData(Responsedata.listing);
-          setType(Responsedata.listing.metadata.type);
-          setCountry(Responsedata.listing.address.Country);
-          setStreet(Responsedata.listing.address.Street);
-          setCity(Responsedata.listing.address.City);
-          setState(Responsedata.listing.address.State);
-          setPostcode(Responsedata.listing.address.Postcode);
-          setBedroom(Responsedata.listing.metadata.bedInfo.Bedrooms);
-          setBed(Responsedata.listing.metadata.bedInfo.Bathrooms);
-          setBathroom(Responsedata.listing.metadata.bedInfo.Bathrooms);
-          setGuest(Responsedata.listing.metadata.bedInfo.Guests);
-          setPrice(Responsedata.listing.price);
-          setTitle(Responsedata.listing.title);
-          setlength(Responsedata.listing.title.length);
-          setAirConditioningChecked(
-            Responsedata.listing.metadata.otherInfo.AirConditioning
-          );
-          setFreeParkingChecked(
-            Responsedata.listing.metadata.otherInfo.FreeParking
-          );
-          setWifiChecked(Responsedata.listing.metadata.otherInfo.WiFi);
-          setTVChecked(Responsedata.listing.metadata.otherInfo.TV);
-          setKitchenChecked(Responsedata.listing.metadata.otherInfo.Kitchen);
-          setWashingmachineChecked(
-            Responsedata.listing.metadata.otherInfo.WashingMachine
-          );
-          const img0 = Responsedata.listing.thumbnail;
-          const allimg = Responsedata.listing.metadata.images;
-          setThumbil(img0);
-          setSelectedImageString(allimg);
-        })
-        .catch((error) => {
-          meetError(error);
-          return null; // 处理错误，返回一个默认值
-        });
-    }
-  });
+    callAPIget('listings/' + HostingId, token)
+      .then((response) => {
+        const Responsedata = response as ApiResponse;
+        console.log(Responsedata.listing);
+        setData(Responsedata.listing);
+        setType(Responsedata.listing.metadata.type);
+        setCountry(Responsedata.listing.address.Country);
+        setStreet(Responsedata.listing.address.Street);
+        setCity(Responsedata.listing.address.City);
+        setState(Responsedata.listing.address.State);
+        setPostcode(Responsedata.listing.address.Postcode);
+        setBedroom(Responsedata.listing.metadata.bedInfo.Bedrooms);
+        setBed(Responsedata.listing.metadata.bedInfo.Bathrooms);
+        setBathroom(Responsedata.listing.metadata.bedInfo.Bathrooms);
+        setGuest(Responsedata.listing.metadata.bedInfo.Guests);
+        setPrice(Responsedata.listing.price);
+        setTitle(Responsedata.listing.title);
+        setlength(Responsedata.listing.title.length);
+        setAirConditioningChecked(
+          Responsedata.listing.metadata.otherInfo.AirConditioning
+        );
+        setFreeParkingChecked(
+          Responsedata.listing.metadata.otherInfo.FreeParking
+        );
+        setWifiChecked(Responsedata.listing.metadata.otherInfo.WiFi);
+        setTVChecked(Responsedata.listing.metadata.otherInfo.TV);
+        setKitchenChecked(Responsedata.listing.metadata.otherInfo.Kitchen);
+        setWashingmachineChecked(
+          Responsedata.listing.metadata.otherInfo.WashingMachine
+        );
+        const img0 = Responsedata.listing.thumbnail;
+        const allimg = Responsedata.listing.metadata.images;
+        setThumbil(img0);
+        setSelectedImageString(allimg);
+      })
+      .catch((error) => {
+        meetError(error);
+        return null; // 处理错误，返回一个默认值
+      });
+  }, []);
   const EditNow = () => {
     const pricePattern = /^[1-9]\d{0,4}$/;
     let Confirmflag = true;
@@ -2550,15 +2564,18 @@ const HostSmallCenterHeaderTxt = styled('p')({
   textAlign: 'start',
   height: 'auto',
   fontFamily: 'sans-serif',
-  margin: '30px 0px 0px 90px',
-  fontSize: '30px',
+  margin: '0px',
+  padding: '30px 20px 0px 20px',
+  fontSize: '20px',
   letterSpacing: '0.2px',
-  maxWidth: '60%',
-  wordWrap: 'break-word',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
   fontWeight: '500',
 });
 const HostSmallCenterHeaderBtn = styled('button')({
-  margin: '20px 100px 0px 90px',
+  margin: '20px 100px 0px 20px',
   letterSpacing: '0.3px',
   fontFamily: 'sans-serif',
   height: '28px',
@@ -2734,13 +2751,14 @@ const CenterHeaderHostLargeTxt = styled('p')({
   fontWeight: '500',
 });
 export const LargeHostPage = () => {
+  const { '*': lastSegment } = useParams();
   const navigate = useNavigate();
   const [isOpen, setOpen] = useState(false);
   const close = () => {
     setOpen(false);
   };
   const TargetMenu = useRef<HTMLDivElement | null>(null);
-  const [activeTab, setActiveTab] = useState('hosting');
+  const [activeTab, setActiveTab] = useState(lastSegment);
   const ClickProfile = () => {
     setOpen(!isOpen);
   };
@@ -2800,7 +2818,7 @@ export const LargeHostPage = () => {
     height: '40px',
     color: 'rgb(144, 144, 144)',
     backgroundColor: 'rgb(250, 250, 250)',
-    ...(activeTab !== 'hosting' && {
+    ...(activeTab !== 'myhosting' && {
       color: 'rgb(0, 0, 0)',
       backgroundColor: 'rgb(240, 240, 240)',
     }),
@@ -2819,7 +2837,7 @@ export const LargeHostPage = () => {
     height: '40px',
     color: 'rgb(144, 144, 144)',
     backgroundColor: 'rgb(250, 250, 250)',
-    ...(activeTab === 'hosting' && {
+    ...(activeTab === 'myhosting' && {
       color: 'rgb(0, 0, 0)',
       backgroundColor: 'rgb(240, 240, 240)',
     }),
@@ -2863,7 +2881,7 @@ export const LargeHostPage = () => {
           </LargeHeaderBtn>
         </CenterHeaderHostLarge>
         <Routes>
-          <Route path='/myreservation' element={<ReservingContent />} />
+          <Route path='/myresveration' element={<ReservingContent />} />
           <Route path='/myhosting' element={<HostingContent />} />
         </Routes>
       </LargeHostCenter>

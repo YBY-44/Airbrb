@@ -23,6 +23,7 @@ import {
   callAPIput,
   HoverImage,
   Datetostring,
+  GetDistance,
 } from './API';
 import { GetAllOwnerListing } from './get_all_listing';
 import { Kitchen, Margin, Tv, Wifi } from '@mui/icons-material';
@@ -280,7 +281,7 @@ const ListingType = styled('p')({
   textAlign: 'left',
   margin: '0px',
   padding: '0px',
-  fontSize: '50px',
+  fontSize: '35px',
   height: 'auto',
   fontWeight: '500',
 });
@@ -289,7 +290,7 @@ const ListingTitle = styled('p')({
   textAlign: 'left',
   margin: '0px',
   padding: '0px',
-  fontSize: '30px',
+  fontSize: '20px',
   whiteSpace: 'nowrap',
   letterSpacing: '0.5px',
   textOverflow: 'ellipsis',
@@ -301,14 +302,14 @@ const GuestInfo = styled('div')({
   alignItems: 'center',
 });
 const LogoPath = styled('img')({
-  width: '30px',
-  height: '30px',
+  width: '20px',
+  height: '20px',
 });
 const ListingGuest = styled('p')({
   textAlign: 'left',
   margin: '0px 30px 0px 10px',
   padding: '0px',
-  fontSize: '20px',
+  fontSize: '16px',
   fontWeight: '400',
 });
 const ListingPrice = styled('p')({
@@ -322,7 +323,7 @@ const ListingAddress = styled('p')({
   textAlign: 'left',
   margin: '0px',
   padding: '0px',
-  fontSize: '18px',
+  fontSize: '17px',
   color: 'rgb(20,20,20)',
 });
 const ListingFac = styled('div')({
@@ -358,7 +359,7 @@ const PublishInfo = styled('div')({
 const PublishTitle = styled('p')({
   textAlign: 'left',
   margin: '0px',
-  fontSize: '40px',
+  fontSize: '30px',
   color: 'rgb(0, 0, 0)',
   width: 'auto',
   fontWeight: '500',
@@ -519,7 +520,7 @@ export const PublishPage = () => {
           return null; // 处理错误，返回一个默认值
         });
     }
-  });
+  }, []);
   const items: {
     [key: string]: boolean;
   } = {
@@ -621,18 +622,6 @@ export const PublishPage = () => {
         },
       ]
     );
-  };
-  const GetDistance = (startDate: Date | null, endDate: Date | null) => {
-    if (startDate && endDate) {
-      const date1 = new Date(startDate);
-      const date2 = new Date(endDate);
-      date1.setUTCHours(0, 0, 0, 0);
-      date2.setUTCHours(0, 0, 0, 0);
-      const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-      const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-      return daysDiff;
-    }
-    return 0;
   };
   const handleStartDateChange = (index: number, date: Date) => {
     setTimeIntervals((currentInterval) => {
