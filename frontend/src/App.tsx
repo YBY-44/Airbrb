@@ -1,11 +1,9 @@
-import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import Button from '@mui/material/Button';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ButtonGroup from '@mui/material/ButtonGroup';
 import { ListingDetailSmall, ListingDetailLarge } from './jsx/detail';
 import React, {
   useState,
@@ -35,17 +33,17 @@ import { PublishPage } from './jsx/publish';
 import TextField from '@mui/material/TextField';
 import { GetAllListing, GetAllOwnerBooking } from './jsx/get_all_listing';
 import InputAdornment from '@mui/material/InputAdornment';
-import { styled, Alert } from '@mui/material';
+import { styled } from '@mui/material';
 // when meet error then show the error
 export const meetError = (error: string) => {
   console.log(error);
   let errorText = '';
   switch (error) {
     case 'info':
-      errorText = 'Input error!';
+      errorText = 'Incorrect input data!';
       break;
     case 'access':
-      errorText = 'Access error!';
+      errorText = 'No permission, please log in first!';
       break;
     default:
       errorText = 'Network error! Please try again.';
@@ -53,7 +51,22 @@ export const meetError = (error: string) => {
   }
   return errorText;
 };
-
+export const meetErrorLog = (error: string) => {
+  console.log(error);
+  let errorText = '';
+  switch (error) {
+    case 'info':
+      errorText = 'Invalid username or password !';
+      break;
+    case 'access':
+      errorText = 'No permission, please log in first!';
+      break;
+    default:
+      errorText = 'Network error! Please try again.';
+      break;
+  }
+  return errorText;
+};
 interface LoginModels {
   isOpen: boolean;
   close: () => void;
@@ -180,6 +193,12 @@ export const LoginModelDetail: React.FC<LoginModels> = ({ isOpen, close }) => {
   return isOpen ? componment : null;
 };
 export const LogoutModelHost: React.FC<LogoutModels> = ({ isOpen, close }) => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const navigate = useNavigate();
   const LogoutClick = () => {
     close();
@@ -192,10 +211,16 @@ export const LogoutModelHost: React.FC<LogoutModels> = ({ isOpen, close }) => {
       .then(() => {
         console.log('logout');
         navigate('/');
+        setOpenSnackbar({ severity: 'info', message: 'You are logged out' });
+        setOpenSnackbar({ severity: 'info', message: '' });
         localStorage.clear();
       })
       .catch((error) => {
-        meetError(error);
+        setOpenSnackbar({ severity: 'error', message: meetError(error) });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
       });
   };
   const componment = (
@@ -211,6 +236,12 @@ export const LogoutModelHost: React.FC<LogoutModels> = ({ isOpen, close }) => {
 };
 
 export const LogoutModel: React.FC<LogoutModels> = ({ isOpen, close }) => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const navigate = useNavigate();
   const LogoutClick = () => {
     close();
@@ -221,12 +252,15 @@ export const LogoutModel: React.FC<LogoutModels> = ({ isOpen, close }) => {
     }
     CallAPIPostWithToken('user/auth/logout', {}, token)
       .then(() => {
+        setOpenSnackbar({ severity: 'info', message: 'You are logged out' });
+        setOpenSnackbar({ severity: 'info', message: '' });
         console.log('logout');
         navigate('/');
         localStorage.clear();
       })
       .catch((error) => {
-        meetError(error);
+        setOpenSnackbar({ severity: 'error', message: meetError(error) });
+        setOpenSnackbar({ severity: 'error', message: '' });
       });
   };
   const componment = (
@@ -256,8 +290,8 @@ const LoginOverAll = styled('div')({
 const LoginBlock = styled('div')({
   position: 'absolute',
   top: '50px',
-  left: '20%',
-  width: '60%',
+  left: '10%',
+  width: '80%',
   height: 'auto',
   maxHeight: '500px',
   zIndex: '2',
@@ -303,8 +337,9 @@ const LoginHeadText = styled('p')({
 });
 const LoginCenterPart = styled('div')({
   height: 'auto',
-  maxHeight: '440px',
+  maxHeight: '430px',
   marginTop: '10px',
+  marginBottom: '10px',
   display: 'flex',
   flexDirection: 'column',
   alignContent: 'center',
@@ -386,6 +421,13 @@ const LoginButton = styled('button')({
   },
 });
 const LogPage = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
+
   const [checked, setChecked] = useState(false);
   const currentEmail = localStorage.getItem('RegistedUserEmail');
   const [logEmail, setLogEmail] = useState(currentEmail || '');
@@ -438,10 +480,25 @@ const LogPage = () => {
           }, 200);
           localStorage.setItem('LoggedUserEmail', data.email);
           localStorage.setItem('token', String(token));
+          setOpenSnackbar({
+            severity: 'success',
+            message: 'Welcome ' + data.email + ' !',
+          });
+          setOpenSnackbar({
+            severity: 'success',
+            message: '',
+          });
         })
         .catch((error) => {
-          console.log(error);
-          setcontentMsg(meetError(error));
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetErrorLog(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
+          setcontentMsg(meetErrorLog(error));
         });
     }
   };
@@ -503,6 +560,13 @@ const LogPage = () => {
 };
 
 const RegistPage = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
+
   const [checked, setChecked] = useState(false);
   const [pwd, setPWD] = useState('');
   const handlepwdChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -561,13 +625,28 @@ const RegistPage = () => {
           }, 3000);
           setChecked(true);
           localStorage.setItem('RegistedUserEmail', email);
+          setOpenSnackbar({
+            severity: 'success',
+            message: 'Successful registration !',
+          });
           setcontentMsg(
             'Register successfully and we will login for you in 3 seconds.'
           );
         })
         .catch((error) => {
           console.log(error);
-          setcontentMsg('This email has been Registed');
+          if (error === 'info') {
+            setcontentMsg('This email has been Registed');
+            setOpenSnackbar({
+              severity: 'error',
+              message: 'This email has been Registed',
+            });
+            setOpenSnackbar({ severity: 'error', message: '' });
+          } else {
+            setcontentMsg(meetError(error));
+            setOpenSnackbar({ severity: 'error', message: meetError(error) });
+            setOpenSnackbar({ severity: 'error', message: '' });
+          }
         });
     }
   };
@@ -758,10 +837,6 @@ export const SmallButtomButton2 = styled('img')({
   width: '25px',
   height: '25px',
 });
-interface ConfirmCreatProps {
-  isOpen: boolean;
-  close: () => void;
-}
 const FilterBlock = styled('div')({
   '@media (max-width: 760px)': {
     width: '100%',
@@ -946,30 +1021,6 @@ const IntervalContent = styled('div')({
   width: '100%',
   height: '100%',
 });
-const minimumOne = (num1: number | null, num2: number | null) => {
-  if (num1 === null) {
-    num1 = 1;
-  }
-  if (num2 === null) {
-    num2 = 99999;
-  }
-  if (num1 - num2 > 0) {
-    return num2;
-  }
-  return num1;
-};
-const maximumOne = (num1: number | null, num2: number | null) => {
-  if (num1 === null) {
-    num1 = 1;
-  }
-  if (num2 === null) {
-    num2 = 99999;
-  }
-  if (num1 - num2 > 0) {
-    return num1;
-  }
-  return num2;
-};
 interface ConfirmFilterProps {
   isOpen: boolean;
   close: () => void;
@@ -1228,14 +1279,14 @@ const SmallHomePage = () => {
   const ClickProfile = () => {
     setOpen(!isOpen);
   };
-  // const ClickOther = (event: React.MouseEvent) => {
-  //   if (
-  //     TargetMenu.current &&
-  //     !TargetMenu.current.contains(event.target as Node)
-  //   ) {
-  //     setOpen(false);
-  //   }
-  // };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('LoggedUserEmail');
+    // 如果存在有效的 token 和 userId，进行自动登录
+    if (token && userId) {
+      navigate(`/user/${userId}`);
+    }
+  }, []);
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     console.log(userId);
@@ -1358,6 +1409,7 @@ export const LargeHomeHeadLogo = styled('div')({
 export const LargeHomeHeadLogoContent = styled('img')({
   height: '110%',
   objectFit: 'cover',
+  cursor: 'pointer',
 });
 export const LargeHomeHeadSearchContent = styled('div')({
   justifyContent: 'center',
@@ -1496,14 +1548,6 @@ const LargeHomePage = () => {
   const ClickProfile = () => {
     setOpen(!isOpen);
   };
-  // const ClickOther = (event: React.MouseEvent) => {
-  //   if (
-  //     TargetMenu.current &&
-  //     !TargetMenu.current.contains(event.target as Node)
-  //   ) {
-  //     setOpen(false);
-  //   }
-  // };
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     console.log(userId);
@@ -1513,7 +1557,14 @@ const LargeHomePage = () => {
       navigate('/login');
     }
   };
-
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('LoggedUserEmail');
+    // 如果存在有效的 token 和 userId，进行自动登录
+    if (token && userId) {
+      navigate(`/user/${userId}`);
+    }
+  }, []);
   return (
     <LargeHomePagecss>
       <div ref={TargetMenu}>
@@ -1674,16 +1725,20 @@ const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     </ErrorContext.Provider>
   );
 };
-
+const MainDiv = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  height: '100%',
+});
 const MainContent = () => {
+  localStorage.setItem('scroll', 'f');
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
-  const {
-    snackbarData
-  } = ErrorValue;
+  const { snackbarData } = ErrorValue;
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   let layoutComponentHost;
   let LayoutComponentHomeWrapper;
@@ -1717,7 +1772,7 @@ const MainContent = () => {
     );
   }
   return (
-    <div>
+    <MainDiv>
       <GlobalSnackbar
         severity={snackbarData.severity}
         message={snackbarData.message}
@@ -1750,7 +1805,7 @@ const MainContent = () => {
           <Route path='*' element={LayoutComponentHomeWrapper} />
         </Routes>
       </Router>
-    </div>
+    </MainDiv>
   );
 };
 

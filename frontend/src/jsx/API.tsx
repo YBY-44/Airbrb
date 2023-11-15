@@ -4,10 +4,6 @@ import config from '../config.json';
 import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material';
 const port = config.BACKEND_PORT;
-interface ColorAlertsProps {
-  type: string;
-  content: string;
-}
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) => (
   <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />
@@ -24,21 +20,23 @@ export const GlobalSnackbar: React.FC<GlobalSnackbarProps> = ({
   severity,
 }) => {
   const [open, setOpen] = useState(false);
-
+  const [displayedMessage, setDisplayedMessage] = useState('');
   useEffect(() => {
-    if (message) {
+    if (message && message !== displayedMessage) {
       setOpen(true);
+      setDisplayedMessage(message);
     }
-  }, [message]);
+  }, [message, displayedMessage]);
 
   const handleClose = () => {
     setOpen(false);
+    setDisplayedMessage('');
   };
 
   return (
     <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
       <Alert onClose={handleClose} severity={severity} sx={{ width: '100%' }}>
-        {message}
+        {displayedMessage}
       </Alert>
     </Snackbar>
   );
@@ -304,7 +302,7 @@ export const callAPIget = (path: string, token: string) => {
   });
 };
 // All delete request send by this function
-export const callAPIdelete = (path: string, token: object) => {
+export const callAPIdelete = (path: string, token: string) => {
   return new Promise((resolve, reject) => {
     fetch('http://localhost:' + String(port) + '/' + String(path), {
       method: 'DELETE',

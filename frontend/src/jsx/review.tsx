@@ -1,26 +1,10 @@
 import { styled } from '@mui/material';
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  ChangeEvent,
-  LabelHTMLAttributes,
-  useContext,
-} from 'react';
-import ReactDOM from 'react-dom';
-import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import React, { useState, ChangeEvent, useContext } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { meetError, ErrorContext } from '../App';
-import Stack from '@mui/material/Stack';
-import Rating, { RatingClasses } from '@mui/material/Rating';
-import {
-  callAPIget,
-  CallAPIPostWithToken,
-  callAPIput,
-  HoverImage,
-  callAPIpost,
-} from './API';
+import Rating from '@mui/material/Rating';
+import { callAPIput } from './API';
 import dayjs from 'dayjs';
-import { Today } from '@mui/icons-material';
 const LoginOverAll = styled('div')({
   justifyContent: 'center',
   alignItems: 'center',
@@ -36,8 +20,8 @@ const LoginOverAll = styled('div')({
 const LoginBlock = styled('div')({
   position: 'absolute',
   top: '50px',
-  left: '20%',
-  width: '60%',
+  left: '10%',
+  width: '80%',
   height: 'auto',
   maxHeight: '500px',
   zIndex: '2',
@@ -55,12 +39,6 @@ const LoginHeader = styled('div')({
   width: '100%',
   borderBottom: '1px solid rgb(222, 222, 222)',
   height: '50px',
-});
-const LoginInputBlock = styled('div')({
-  marginTop: '10px',
-  justifyContent: 'start',
-  width: '90%',
-  textAlign: 'start',
 });
 const LoginCloseButton = styled('button')({
   border: '0px',
@@ -94,24 +72,28 @@ const LoginCenterPart = styled('div')({
   overflowY: 'scroll',
 });
 const RatPart = styled('div')({
+  '@media (max-width: 750px)': {
+    flexDirection: 'column',
+  },
+  '@media (min-width: 750px)': {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   width: '100%',
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
 });
 const RatingScore = styled('div')({
-  margin: '0px 20px 0px 0px',
+  margin: '0px 20px 0px 40px',
   display: 'flex',
   alignItems: 'center',
 });
 const TxtPart = styled('div')({
-  padding: '20px 0px 0px 0px',
   width: '100%',
   display: 'flex',
   flexDirection: 'column',
 });
 const RevContent = styled('textarea')({
-  margin: '10px 20px 10px 30px',
+  margin: '10px 20px 0px 30px',
   padding: '5px 0px 5px 10px',
   resize: 'none',
   border: '1px solid rgb(200,200,200)',
@@ -128,24 +110,6 @@ const MarkTitle2 = styled('p')({
   padding: '0px',
   fontWeight: '500',
 });
-interface QoneShowSelectProps extends LabelHTMLAttributes<HTMLLabelElement> {
-  checked?: boolean;
-}
-const ErrorLabel = styled('p')<QoneShowSelectProps>`
-  font-size: 14px;
-  width: 90%;
-  padding: 0;
-  padding-top: 10px;
-  margin: 0;
-  color: rgb(255, 0, 0);
-
-  ${({ checked }) =>
-    checked &&
-    `
-      color: #009e2d;
-    `}
-`;
-
 const LoginButton = styled('button')({
   marginTop: '20px',
   marginBottom: '30px',
@@ -172,7 +136,7 @@ export const AddReview: React.FC<ReviewPart> = ({ refresh }) => {
     // Handle the case where contextValue is null (optional)
     return null;
   }
-  const { snackbarData, setOpenSnackbar } = ErrorValue;
+  const { setOpenSnackbar } = ErrorValue;
 
   localStorage.setItem('scroll', 't');
   const [score, setScore] = useState(0);
@@ -236,6 +200,10 @@ export const AddReview: React.FC<ReviewPart> = ({ refresh }) => {
               severity: 'success',
               message: 'Thanks for your feedback！',
             });
+            setOpenSnackbar({
+              severity: 'success',
+              message: '',
+            });
             refresh();
             CloseLoginPage();
           })
@@ -244,6 +212,10 @@ export const AddReview: React.FC<ReviewPart> = ({ refresh }) => {
             setOpenSnackbar({
               severity: 'error',
               message: content,
+            });
+            setOpenSnackbar({
+              severity: 'error',
+              message: '',
             });
           });
       }

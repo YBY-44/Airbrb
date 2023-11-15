@@ -1,6 +1,3 @@
-// src/components/HomePage.js
-// import { type } from 'os';
-// import { title } from 'process';
 import { styled } from '@mui/material';
 import React, {
   useState,
@@ -35,11 +32,12 @@ import {
   callAPIput,
   HoverImage,
 } from './API';
-import { GetAllOwnerListing, GetAllBookingRequest } from './get_all_listing';
-type SnackbarData = {
-  severity: 'success' | 'error' | 'warning' | 'info';
-  message: string;
-};
+import { History } from './History';
+import {
+  GetAllOwnerListing,
+  GetAllBookingRequest,
+  GetAllOwnerListingSummary,
+} from './get_all_listing';
 export const getAllReservations = () => {
   console.log('111');
 };
@@ -64,8 +62,33 @@ const HeaderSubtxtHost = styled('p')({
   letterSpacing: '0.2px',
   fontWeight: '500',
 });
+const HeaderSubtxtHostR = styled('p')({
+  textAlign: 'start',
+  width: '100%',
+  height: '35px',
+  margin: '0px',
+  padding: '0px',
+  fontFamily: 'Arial, Helvetica, sans-serif',
+  marginLeft: '20px',
+  fontSize: '20px',
+  letterSpacing: '0.2px',
+  fontWeight: '500',
+});
 const HostContent = styled('div')({
-  margin: '20px 10% 0px 10%',
+  display: 'flex',
+  flexDirection: 'column',
+  margin: '20px 5% 0px 5%',
+  width: 'auto',
+  height: '100%',
+  backgroundColor: 'rgb(239, 239, 239)',
+  borderRadius: '20px',
+  overflow: 'hidden',
+  overflowY: 'scroll',
+});
+const HostContentR = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  margin: '10px 5% 0px 5%',
   width: 'auto',
   height: '100%',
   backgroundColor: 'rgb(239, 239, 239)',
@@ -94,11 +117,14 @@ export const ReservingContent = () => {
   return (
     <ContentCenterHost>
       <CenterTitleHost>
-        <HeaderSubtxtHost>Your Resveration</HeaderSubtxtHost>
+        <HeaderSubtxtHostR>
+          Your Resveration & Hosting Summary
+        </HeaderSubtxtHostR>
       </CenterTitleHost>
-      <HostContent>
+      <HostContentR>
         <GetAllBookingRequest />
-      </HostContent>
+        <GetAllOwnerListingSummary />
+      </HostContentR>
     </ContentCenterHost>
   );
 };
@@ -196,7 +222,6 @@ const CfmClose = styled('p')({
   fontWeight: '500',
   letterSpacing: '0.2px',
   backgroundColor: 'rgb(255, 255, 255)',
-  // margin: '20px 0px 10px 0px',
   padding: '0px 10px 0px 10px',
   borderRadius: '20px',
 });
@@ -311,6 +336,7 @@ const CfmHead = styled('p')({
   letterSpacing: '0.2px',
   color: 'rgb(48, 48, 48)',
 });
+
 export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
   data,
   isOpen,
@@ -321,20 +347,22 @@ export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
     // Handle the case where contextValue is null (optional)
     return null;
   }
-  const { snackbarData, setOpenSnackbar } = ErrorValue;
+  const { setOpenSnackbar } = ErrorValue;
   const navigate = useNavigate();
   const CreatHosting = () => {
     const token = localStorage.getItem('token') || '';
     CallAPIPostWithToken('listings/new', data, token)
       .then(() => {
         setOpenSnackbar({ severity: 'success', message: 'Creat successful!' });
+        setOpenSnackbar({ severity: 'success', message: '' });
         console.log('success');
         const userId = localStorage.getItem('LoggedUserEmail');
-        navigate(`/user/${userId}/hosting/myhosting`);
         close();
+        navigate(`/user/${userId}/hosting/myhosting`);
       })
       .catch((error) => {
-        setOpenSnackbar({ severity: 'success', message: meetError(error) });
+        setOpenSnackbar({ severity: 'error', message: meetError(error) });
+        setOpenSnackbar({ severity: 'error', message: '' });
       });
   };
 
@@ -444,21 +472,42 @@ export const ConfirmEdit: React.FC<ConfirmCreatProps> = ({
   isOpen,
   close,
 }) => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const { HostingId } = useParams();
   const navigate = useNavigate();
   const EditHosting = () => {
     const token = localStorage.getItem('token') || '';
     callAPIput('listings/' + HostingId, data, token)
       .then(() => {
+        setOpenSnackbar({
+          severity: 'success',
+          message: 'Your hosting has been updated !',
+        });
+        setOpenSnackbar({
+          severity: 'success',
+          message: '',
+        });
         console.log('success');
         close();
         const userId = localStorage.getItem('LoggedUserEmail');
         navigate(`/user/${userId}/hosting/myhosting`);
-        alert('Modify hosting successful !');
       })
-      .catch((error) => meetError(error));
+      .catch((error) => {
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+      });
   };
-
   let conponment = <div></div>;
   if (isOpen) {
     const address =
@@ -487,167 +536,6 @@ export const ConfirmEdit: React.FC<ConfirmCreatProps> = ({
     if (trueKeys.length === 0) {
       trueKeys.push('No additional Facilities');
     }
-    const CfmAll = styled('div')({
-      width: '100%',
-      height: '100%',
-      position: 'absolute',
-      zIndex: '3',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    });
-    const CfmBack = styled('div')({
-      zIndex: '1',
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'black',
-      opacity: '0.3',
-    });
-    const CfmContent = styled('div')({
-      position: 'absolute',
-      zIndex: '4',
-      width: '80%',
-      height: '600px',
-      backgroundColor: 'rgb(255, 255, 255)',
-      borderRadius: '10px',
-      boxShadow: '0px 1px 10px 1px rgba(42, 42, 42, 0.5)',
-    });
-    const CfmHeight = styled('div')({
-      width: '100%',
-      height: '50px',
-      display: 'flex',
-      alignItems: 'center',
-      borderBottom: '1px solid rgb(200, 200, 200)',
-    });
-    const CfmClose = styled('p')({
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '30px !important',
-      margin: '0px',
-      marginLeft: '10px',
-      cursor: 'pointer',
-      display: 'flex',
-      border: '1px solid black',
-      width: '70px',
-      fontWeight: '500',
-      letterSpacing: '0.2px',
-      backgroundColor: 'rgb(255, 255, 255)',
-      // margin: '20px 0px 10px 0px',
-      padding: '0px 10px 0px 10px',
-      borderRadius: '20px',
-    });
-    const CfmCenterContent = styled('div')({
-      position: 'relative',
-      fontSize: '20px',
-      margin: '0px',
-      padding: '20px 0px 0px 0px',
-      height: '480px',
-      overflowY: 'scroll',
-      textAlign: 'center',
-      color: 'rgb(0, 0, 0)',
-    });
-    const CfmRow = styled('div')({
-      display: 'flex',
-      justifyContent: 'space-between',
-      height: '40px',
-      margin: '20px 10% 0px 10%',
-      borderBottom: '1px solid rgb(220, 220, 220)',
-    });
-    const CfmRowP = styled('div')({
-      display: 'flex',
-      justifyContent: 'space-between',
-      margin: '20px 10% 0px 10%',
-      borderBottom: '1px solid rgb(220, 220, 220)',
-      '@media (max-width: 480px)': {
-        flexDirection: 'column',
-      },
-      '@media (min-width: 480px)': {
-        flexDirection: 'row',
-      },
-    });
-    const CfmRowCol = styled('div')({
-      display: 'flex',
-      flexDirection: 'column',
-      height: 'auto',
-      margin: '10px 10% 0px 10%',
-      paddingBottom: '10px',
-      borderBottom: '1px solid rgb(220, 220, 220)',
-    });
-    const CfmLefttxt = styled('p')({
-      textAlign: 'left',
-      margin: '0px',
-      marginBottom: '10px',
-      fontSize: '15px',
-      color: 'rgb(42, 42, 42)',
-    });
-    const CfmRightttxt = styled('p')({
-      textAlign: 'left',
-      margin: '0px 10px 10px 10px',
-      fontSize: '14px',
-      color: 'rgb(85, 85, 85)',
-      maxWidth: '100%',
-      wordWrap: 'break-word',
-    });
-    const CfmValuettxt = styled('p')({
-      textAlign: 'left',
-      margin: '0px',
-      marginLeft: '10px',
-      fontSize: '13px',
-      color: 'rgb(0, 0, 0)',
-      width: 'auto',
-      fontWeight: '500',
-    });
-    const CfmGuest = styled('div')({
-      width: '100%',
-      display: 'flex',
-      flexWrap: 'wrap',
-      '@media (max-width: 480px)': {
-        justifyContent: 'left',
-      },
-      '@media (min-width: 480px)': {
-        justifyContent: 'space-around',
-      },
-    });
-    const CfmFac = styled('div')({
-      width: '100%',
-      display: 'flex',
-      flexWrap: 'wrap',
-      '@media (max-width: 700px)': {
-        justifyContent: 'left',
-      },
-      '@media (min-width: 700px)': {
-        justifyContent: 'space-around',
-      },
-    });
-    const CfmBottom = styled('div')({
-      width: '100%',
-      display: 'flex',
-      height: '50px',
-      justifyContent: 'center',
-    });
-    const CfmTitleTxt = styled('p')({
-      width: 'auto',
-      textAlign: 'left',
-      margin: '0px',
-      fontSize: '13px',
-      color: 'rgb(54, 54, 54)',
-    });
-    const CfmGuestBlock = styled('div')({
-      margin: '0px 10px 0px 0px',
-      alignItems: 'center',
-      width: 'auto',
-      display: 'flex',
-    });
-    const CfmHead = styled('p')({
-      fontSize: '20px',
-      margin: '20px 60px 0px 0px',
-      width: '100%',
-      height: '50px',
-      textAlign: 'center',
-      letterSpacing: '0.2px',
-      color: 'rgb(48, 48, 48)',
-    });
     conponment = (
       <CfmAll>
         <CfmBack></CfmBack>
@@ -1062,7 +950,6 @@ const UploadIMG = styled('img')({
 });
 interface ListingContent {
   title: string;
-  // owner: string;
   address: {
     City: string;
     Country: string;
@@ -1090,13 +977,15 @@ interface ListingContent {
     };
     images: string[];
   };
-  // reviews: {
-  //   score: number;
-  //   content: string;
-  // }[];
 }
 
 export const CreateHosting = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const RefT = useRef<HTMLInputElement | null>(null);
   const RefFile = useRef<HTMLInputElement | null>(null);
   const HandleT = () => {
@@ -1210,6 +1099,7 @@ export const CreateHosting = () => {
     }
   };
   const goesHost = () => {
+    setData(initialListingContent);
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myhosting`);
   };
@@ -1248,7 +1138,6 @@ export const CreateHosting = () => {
           resolve(base64String);
         }
       };
-
       reader.onerror = (error) => {
         reject(error);
       };
@@ -1278,6 +1167,14 @@ export const CreateHosting = () => {
       // return /^[\w+/]*[=]*$/.test(decodedData);
       return decodedData === realdata;
     } catch (error) {
+      setOpenSnackbar({
+        severity: 'error',
+        message: 'Your image is not follow 64base encode !',
+      });
+      setOpenSnackbar({
+        severity: 'error',
+        message: '',
+      });
       console.log(error);
       return false; // Invalid base64 or unable to decode
     }
@@ -1355,11 +1252,27 @@ export const CreateHosting = () => {
               setSelectedImageString([...AllImaegsString, ...base64array]);
             })
             .catch((error) => {
+              setOpenSnackbar({
+                severity: 'error',
+                message: 'Your Image upload has some error, please try again!',
+              });
+              setOpenSnackbar({
+                severity: 'error',
+                message: '',
+              });
               console.error(error);
             });
           setFileInputValue('');
         })
         .catch((error) => {
+          setOpenSnackbar({
+            severity: 'error',
+            message: 'Your Image upload has some error, please try again!',
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
           setAllfalse();
           setErrorContent(error);
           setErrorText7(true);
@@ -1799,6 +1712,13 @@ export const CreateHosting = () => {
 };
 
 export const EditHosting = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
+
   const RefT = useRef<HTMLInputElement | null>(null);
   const RefFile = useRef<HTMLInputElement | null>(null);
   const HandleT = () => {
@@ -1982,6 +1902,14 @@ export const EditHosting = () => {
       // return /^[\w+/]*[=]*$/.test(decodedData);
       return decodedData === realdata;
     } catch (error) {
+      setOpenSnackbar({
+        severity: 'error',
+        message: 'Your Image not follow 64base encoded !',
+      });
+      setOpenSnackbar({
+        severity: 'error',
+        message: '',
+      });
       console.log(error);
       return false; // Invalid base64 or unable to decode
     }
@@ -2059,11 +1987,29 @@ export const EditHosting = () => {
               setSelectedImageString([...AllImaegsString, ...base64array]);
             })
             .catch((error) => {
+              setOpenSnackbar({
+                severity: 'error',
+                message:
+                  'We meet some error when upload your image, please try agian!',
+              });
+              setOpenSnackbar({
+                severity: 'error',
+                message: '',
+              });
               console.error(error);
             });
           setFileInputValue('');
         })
         .catch((error) => {
+          setOpenSnackbar({
+            severity: 'error',
+            message:
+              'We meet some error when upload your image, please try agian!',
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
           setAllfalse();
           setErrorContent(error);
           setErrorText7(true);
@@ -2085,7 +2031,6 @@ export const EditHosting = () => {
       ref.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
   type ApiResponse = {
     listing: ListingContent;
   };
@@ -2126,7 +2071,14 @@ export const EditHosting = () => {
         setSelectedImageString(allimg);
       })
       .catch((error) => {
-        meetError(error);
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
         return null; // 处理错误，返回一个默认值
       });
   }, []);
@@ -2551,7 +2503,7 @@ const HostCenterSmall = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   height: 'calc(100% - 140px)',
-  overflow: 'scroll',
+  overflowY: 'scroll',
   width: '100%',
 });
 const CenterHeaderHost = styled('div')({
@@ -2600,15 +2552,6 @@ export const SmallHostPage = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/CreateListing`);
   };
-  // const ClickOther = (event: React.MouseEvent) => {
-  //   if (
-  //     TargetMenu.current &&
-  //     !TargetMenu.current.contains(event.target as Node)
-  //   ) {
-  //     setOpen(false);
-  //   }
-  // };
-
   const goseHome = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}`);
@@ -2621,27 +2564,14 @@ export const SmallHostPage = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myresveration`);
   };
-  // useEffect(() => {
-  //   const clickHandler = (event: MouseEvent) => {
-  //     ClickOther(event as unknown as React.MouseEvent); // 使用类型断言将 MouseEvent 转换为 React.MouseEvent
-  //   };
-  //   if (isOpen) {
-  //     // 如果菜单是打开的，添加事件监听器来处理点击页面其他地方的事件
-  //     document.addEventListener('click', clickHandler);
-  //   } else {
-  //     // 如果菜单是关闭的，移除事件监听器
-  //     document.removeEventListener('click', clickHandler);
-  //   }
-  //   return () => {
-  //     // 在组件卸载时，移除事件监听器，以防止内存泄漏
-  //     document.removeEventListener('click', clickHandler);
-  //   };
-  // }, [isOpen]); // 当 isMenuOpen 改变时，重新设置事件监听器
   return (
     <SmallHomePagecss>
       <div ref={TargetMenu}>
         <LogoutModelHost isOpen={isOpen} close={close} />
       </div>
+      <Routes>
+        <Route path='/myresveration/history/:HostingId' element={<History />} />
+      </Routes>
       <SmallHomeHead>
         <LargeHomeHeadLogo>
           <LargeHomeHeadLogoContent src='/img/logo_p.png'></LargeHomeHeadLogoContent>
@@ -2663,7 +2593,7 @@ export const SmallHostPage = () => {
           </HostSmallCenterHeaderBtn>
         </CenterHeaderHost>
         <Routes>
-          <Route path='/myresveration' element={<ReservingContent />} />
+          <Route path='/myresveration/*' element={<ReservingContent />} />
           <Route path='/myhosting' element={<HostingContent />} />
         </Routes>
       </HostCenterSmall>
@@ -2686,6 +2616,7 @@ export const SmallHostPage = () => {
 };
 const LargeHostOverall = styled('div')({
   width: '100%',
+  height: '100%',
   display: 'flex',
   flexDirection: 'column',
 });
@@ -2718,6 +2649,8 @@ const LargeHostCenter = styled('div')({
   width: '100%',
   display: 'flex',
   flexDirection: 'column',
+  overflowX: 'hidden',
+  overflowY: 'scroll',
 });
 const LargeHeaderBtn = styled('button')({
   marginRight: '100px',
@@ -2781,29 +2714,13 @@ export const LargeHostPage = () => {
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myhosting`);
-    setActiveTab('hosting'); // 更新活动标签
+    setActiveTab('myhosting');
   };
   const goesReservation = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myresveration`);
-    setActiveTab('reserving'); // 更新活动标签
+    setActiveTab('myreserving');
   };
-  // useEffect(() => {
-  //   const clickHandler = (event: MouseEvent) => {
-  //     ClickOther(event as unknown as React.MouseEvent); // 使用类型断言将 MouseEvent 转换为 React.MouseEvent
-  //   };
-  //   if (isOpen) {
-  //     // 如果菜单是打开的，添加事件监听器来处理点击页面其他地方的事件
-  //     document.addEventListener('click', clickHandler);
-  //   } else {
-  //     // 如果菜单是关闭的，移除事件监听器
-  //     document.removeEventListener('click', clickHandler);
-  //   }
-  //   return () => {
-  //     // 在组件卸载时，移除事件监听器，以防止内存泄漏
-  //     document.removeEventListener('click', clickHandler);
-  //   };
-  // }, [isOpen]); // 当 isMenuOpen 改变时，重新设置事件监听器
   const SwitchReser = styled('div')({
     display: 'flex',
     alignItems: 'center',
@@ -2847,6 +2764,9 @@ export const LargeHostPage = () => {
       <div ref={TargetMenu}>
         <LogoutModel isOpen={isOpen} close={close} />
       </div>
+      <Routes>
+        <Route path='/myresveration/history/:HostingId' element={<History />} />
+      </Routes>
       <LargeHostHeight>
         <LargeHostLogo>
           <LargeHomeHeadLogoContent src='/img/logo_p.png'></LargeHomeHeadLogoContent>
@@ -2881,7 +2801,7 @@ export const LargeHostPage = () => {
           </LargeHeaderBtn>
         </CenterHeaderHostLarge>
         <Routes>
-          <Route path='/myresveration' element={<ReservingContent />} />
+          <Route path='/myresveration/*' element={<ReservingContent />} />
           <Route path='/myhosting' element={<HostingContent />} />
         </Routes>
       </LargeHostCenter>

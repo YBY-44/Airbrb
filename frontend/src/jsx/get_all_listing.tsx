@@ -1,18 +1,13 @@
-import { callAPIget, callAPIput } from './API';
+import { callAPIdelete, callAPIget, callAPIput, GetDistance } from './API';
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { meetError, AppContext } from '../App';
+import { meetError, AppContext, ErrorContext } from '../App';
 import { styled } from '@mui/material';
 import dayjs from 'dayjs';
 import {
   useNavigate,
-  BrowserRouter as Router,
   // useParams,
-  Route,
-  Routes,
 } from 'react-router-dom';
-import { DemoItem } from '@mui/x-date-pickers/internals/demo';
 import { Availability } from './publish';
-import { Console } from 'console';
 // 可以添加其他属性，以匹配实际响应的数据结构
 type ListingOver = {
   id: number;
@@ -68,6 +63,7 @@ type ListingContent = {
     };
     images: string[];
   };
+  totalday: number;
   published: boolean;
   postedOn: string;
   reviews: {
@@ -78,7 +74,7 @@ type ListingContent = {
 type ApiResponseSpecific = {
   listing: ListingContent;
 };
-const NullListing = styled('p')({
+export const NullListing = styled('p')({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -191,6 +187,12 @@ const Publicprice = styled('p')({
   marginLeft: '20px',
 });
 export const GetAllListing = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const navigate = useNavigate();
   const FilterValue = useContext(AppContext);
   if (!FilterValue) {
@@ -250,7 +252,14 @@ export const GetAllListing = () => {
         }
       })
       .catch((error) => {
-        console.log(error);
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
         setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
       });
   }, []);
@@ -276,7 +285,14 @@ export const GetAllListing = () => {
             return r;
           })
           .catch((error) => {
-            meetError(error);
+            setOpenSnackbar({
+              severity: 'error',
+              message: meetError(error),
+            });
+            setOpenSnackbar({
+              severity: 'error',
+              message: '',
+            });
             return null; // 处理错误，返回一个默认值
           });
       });
@@ -377,7 +393,14 @@ export const GetAllListing = () => {
           }
         })
         .catch((error) => {
-          console.log(error);
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
           if (isMounted.current) {
             setIsLoading(false);
           }
@@ -430,7 +453,7 @@ export const GetAllListing = () => {
 };
 const ListingRow = styled('div')({
   width: '100%',
-  height: '100px',
+  height: '150px',
   margin: '0px',
   alignItems: 'center',
   display: 'flex',
@@ -441,7 +464,20 @@ const ListingRow = styled('div')({
     backgroundColor: 'rgb(230, 230, 230)',
   },
 });
-const LeftPart = styled('div')({
+const ListingRowR = styled('div')({
+  width: '100%',
+  height: '130px',
+  margin: '0px',
+  alignItems: 'center',
+  display: 'flex',
+  borderBottom: '1px solid rgb(197, 197, 197)',
+  justifyContent: 'space-between',
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: 'rgb(230, 230, 230)',
+  },
+});
+export const LeftPart = styled('div')({
   display: 'flex',
   alignItems: 'center',
   marginRight: '0px',
@@ -450,12 +486,12 @@ const LeftPart = styled('div')({
 });
 const SmallListingImage = styled('img')({
   '@media (min-width: 480px)': {
-    width: '80px',
-    height: '80px',
+    width: '100px',
+    height: '100px',
   },
   '@media (max-width: 480px)': {
-    width: '40px',
-    height: '40px',
+    width: '100px',
+    height: '100px',
   },
   borderRadius: '10px',
   margin: '10px 15px 10px 10px',
@@ -463,10 +499,14 @@ const SmallListingImage = styled('img')({
   // border: '1px solid rgb(130, 130, 130)',
   objectFit: 'cover',
 });
-const ListingInfo = styled('div')({
+export const ListingInfo = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   width: '110px',
+});
+const ListingInfoR = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
 });
 const ListingType = styled('p')({
   textAlign: 'left',
@@ -511,12 +551,12 @@ const ListingPrice = styled('p')({
 const ReviewBlock = styled('div')({
   display: 'flex',
   alignItems: 'center',
+  margin: '0px 5px 0px 0px',
 });
 const ReviewPart = styled('div')({
-  paddingTop: '10px',
+  paddingTop: '0px',
   height: '100%',
   display: 'flex',
-  flexDirection: 'column',
   aligItems: 'flex-start',
 });
 const RightButton = styled('div')({
@@ -551,6 +591,12 @@ const ListingBtn = styled('button')({
 });
 
 export const GetAllOwnerListing = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const [data, setData] = useState<ApiResponse>(); // 初始化一个状态来存储从后端获取的数据
   const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]); // 初始化一个状态来存储从后端获取的数据
   const [isLoading, setIsLoading] = useState(true); // 初始化一个状态来表示数据是否正在加载
@@ -579,7 +625,14 @@ export const GetAllOwnerListing = () => {
         }
       })
       .catch((error) => {
-        console.log(error);
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
         setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
       });
   }, [eff1]);
@@ -607,14 +660,21 @@ export const GetAllOwnerListing = () => {
             return r;
           })
           .catch((error) => {
-            meetError(error);
+            setOpenSnackbar({
+              severity: 'error',
+              message: meetError(error),
+            });
+            setOpenSnackbar({
+              severity: 'error',
+              message: '',
+            });
             return null; // 处理错误，返回一个默认值
           });
       });
       Promise.all(promises)
         .then((specificDataArray) => {
           console.log(specificDataArray);
-          isMounted.current = true;
+          // isMounted.current = true;
           if (isMounted.current) {
             // 过滤掉可能为null的值
             const filteredSpecificDataArray = specificDataArray.filter(
@@ -625,7 +685,14 @@ export const GetAllOwnerListing = () => {
           }
         })
         .catch((error) => {
-          console.log(error);
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
           if (isMounted.current) {
             setIsLoading(false);
           }
@@ -640,6 +707,31 @@ export const GetAllOwnerListing = () => {
       navigate('/login');
     }
   };
+  const DeleteHosting = (HostingID: string) => {
+    const token = localStorage.getItem('token') || '';
+    callAPIdelete('listings/' + HostingID, token)
+      .then(() => {
+        setOpenSnackbar({
+          severity: 'success',
+          message: 'Your hosting has been Deleted !',
+        });
+        setOpenSnackbar({
+          severity: 'success',
+          message: '',
+        });
+        seteff1(!eff1);
+      })
+      .catch((error) => {
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+      });
+  };
   const PublishHosting = (HostingID: string) => {
     const userId = localStorage.getItem('LoggedUserEmail');
     if (localStorage.token) {
@@ -649,9 +741,29 @@ export const GetAllOwnerListing = () => {
     }
   };
   const unPublishHosting = (HostingID: string) => {
-    console.log(HostingID);
-    seteff1(!eff1);
-    return null;
+    const token = localStorage.getItem('token') || '';
+    callAPIput('listings/unpublish/' + HostingID, {}, token)
+      .then(() => {
+        setOpenSnackbar({
+          severity: 'success',
+          message: 'Your hosting has been successfully downgraded !',
+        });
+        setOpenSnackbar({
+          severity: 'success',
+          message: '',
+        });
+        seteff1(!eff1);
+      })
+      .catch((error) => {
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+      });
   };
   let content;
   if (isLoading) {
@@ -679,19 +791,21 @@ export const GetAllOwnerListing = () => {
                 </ListingGuest>
               </GuestInfo>
               <ListingPrice>${item.listing.price} AUD</ListingPrice>
+              <ReviewPart>
+                <ReviewBlock>
+                  <Publicstar src='/img/star.png'></Publicstar>
+                  <PublicreviewRating>
+                    {String(item.listing.score.toFixed(2))}
+                  </PublicreviewRating>
+                </ReviewBlock>
+                <ReviewBlock>
+                  <Publicstar src='/img/profile.png'></Publicstar>
+                  <PublicreviewRating>
+                    {item.listing.reviews.length}
+                  </PublicreviewRating>
+                </ReviewBlock>
+              </ReviewPart>
             </ListingInfo>
-            <ReviewPart>
-              <ReviewBlock>
-                <Publicstar src='/img/star.png'></Publicstar>
-                <PublicreviewRating>{String(item.listing.score.toFixed(2))}</PublicreviewRating>
-              </ReviewBlock>
-              <ReviewBlock>
-                <Publicstar src='/img/profile.png'></Publicstar>
-                <PublicreviewRating>
-                  {item.listing.reviews.length}
-                </PublicreviewRating>
-              </ReviewBlock>
-            </ReviewPart>
           </LeftPart>
           <RightButton>
             <ListingBtn
@@ -712,6 +826,13 @@ export const GetAllOwnerListing = () => {
             >
               Edit
             </ListingBtn>
+            <ListingBtn
+              onClick={() => {
+                DeleteHosting(String(data?.listings[index]?.id));
+              }}
+            >
+              Delete
+            </ListingBtn>
             {/* <ListingBtn>Delete</ListingBtn> */}
           </RightButton>
         </ListingRow>
@@ -726,7 +847,7 @@ export const GetAllOwnerListing = () => {
 
   return <ListingContentOwner>{content}</ListingContentOwner>;
 };
-type Booking = {
+export type Booking = {
   id: string;
   owner: string;
   dateRange: Availability;
@@ -734,7 +855,7 @@ type Booking = {
   listingId: string;
   status: string;
 };
-type AllBookings = {
+export type AllBookings = {
   bookings: Booking[];
 };
 type BookingContent = {
@@ -774,6 +895,7 @@ type BookingContent = {
     };
     images: string[];
   };
+  totalday: number;
   published: boolean;
   postedOn: string;
   reviews: {
@@ -795,7 +917,7 @@ const Pstatus = styled('div')({
   textAlign: 'center',
   marginBottom: '5px',
 });
-const DateRange = styled('p')({
+export const DateRange = styled('p')({
   '@media (max-width: 600px)': {
     width: '150px',
   },
@@ -813,6 +935,12 @@ const DateRange = styled('p')({
   overflow: 'hidden',
 });
 export const GetAllOwnerBooking = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const [data, setData] = useState<AllBookings>(); // 初始化一个状态来存储从后端获取的数据
   const [SpecificDatas, setSpecificData] = useState<BookingContent[]>([]); // 初始化一个状态来存储从后端获取的数据
   const [isLoading, setIsLoading] = useState(true); // 初始化一个状态来表示数据是否正在加载
@@ -867,7 +995,14 @@ export const GetAllOwnerBooking = () => {
         }
       })
       .catch((error) => {
-        console.log(error);
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
         setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
       });
   }, []);
@@ -888,7 +1023,14 @@ export const GetAllOwnerBooking = () => {
             return result;
           })
           .catch((error) => {
-            meetError(error);
+            setOpenSnackbar({
+              severity: 'error',
+              message: meetError(error),
+            });
+            setOpenSnackbar({
+              severity: 'error',
+              message: '',
+            });
             return null; // 处理错误，返回一个默认值
           });
       });
@@ -897,14 +1039,22 @@ export const GetAllOwnerBooking = () => {
           if (isMounted.current) {
             // 过滤掉可能为null的值
             const filteredSpecificDataArray = specificDataArray.filter(
-              (item): item is BookingContent => item !== null
+              (item): item is BookingContent =>
+                item !== null && item.published === true
             );
             setSpecificData(filteredSpecificDataArray);
             setIsLoading(false);
           }
         })
         .catch((error) => {
-          console.log(error);
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
           if (isMounted.current) {
             setIsLoading(false);
           }
@@ -919,13 +1069,13 @@ export const GetAllOwnerBooking = () => {
     if (SpecificDatas.length > 0) {
       // 如果数据已加载并且不为空，渲染数据
       content = SpecificDatas.map((item, index) => (
-        <ListingRow
-          key={index}
-        >
+        <ListingRow key={index}>
           {/* 在这里渲染每条数据 */}
-          <LeftPart onClick={() => {
-            showDetail(index);
-          }}>
+          <LeftPart
+            onClick={() => {
+              showDetail(index);
+            }}
+          >
             <SmallListingImage src={item.thumbnail}></SmallListingImage>
             <ListingInfo>
               <ListingType>{item.metadata.type}</ListingType>
@@ -1069,6 +1219,12 @@ const Reject = styled('button')({
   },
 });
 export const GetAllBookingRequest = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const [SpecificDatas, setSpecificData] = useState<BookingContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hooktoupdate, sethook] = useState(false);
@@ -1088,6 +1244,9 @@ export const GetAllBookingRequest = () => {
       .then((response) => {
         if (isMounted.current) {
           const AllBoooking = response as AllBookings;
+          AllBoooking.bookings = AllBoooking.bookings.filter(
+            (item) => item.status === 'pending'
+          );
           // Step2
           callAPIget('listings', '')
             .then((response) => {
@@ -1124,7 +1283,14 @@ export const GetAllBookingRequest = () => {
                         return result;
                       })
                       .catch((error) => {
-                        meetError(error);
+                        setOpenSnackbar({
+                          severity: 'error',
+                          message: meetError(error),
+                        });
+                        setOpenSnackbar({
+                          severity: 'error',
+                          message: '',
+                        });
                         return null; // 处理错误，返回一个默认值
                       });
                   });
@@ -1141,7 +1307,14 @@ export const GetAllBookingRequest = () => {
                       }
                     })
                     .catch((error) => {
-                      console.log(error);
+                      setOpenSnackbar({
+                        severity: 'error',
+                        message: meetError(error),
+                      });
+                      setOpenSnackbar({
+                        severity: 'error',
+                        message: '',
+                      });
                       if (isMounted.current) {
                         setIsLoading(false);
                       }
@@ -1150,13 +1323,27 @@ export const GetAllBookingRequest = () => {
               }
             })
             .catch((error) => {
-              console.log(error);
+              setOpenSnackbar({
+                severity: 'error',
+                message: meetError(error),
+              });
+              setOpenSnackbar({
+                severity: 'error',
+                message: '',
+              });
               setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
             });
         }
       })
       .catch((error) => {
-        console.log(error);
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
         setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
       });
   }, [hooktoupdate]);
@@ -1164,21 +1351,49 @@ export const GetAllBookingRequest = () => {
   const RequestAccept = (id: string) => {
     callAPIput('bookings/accept/' + String(id), {}, token)
       .then(() => {
-        alert('Accept the request!');
+        setOpenSnackbar({
+          severity: 'info',
+          message: 'You accepted a booking.',
+        });
+        setOpenSnackbar({
+          severity: 'info',
+          message: '',
+        });
         sethook(!hooktoupdate);
       })
       .catch((error) => {
-        meetError(error);
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
       });
   };
   const RequestReject = (id: string) => {
     callAPIput('bookings/decline/' + String(id), {}, token)
       .then(() => {
-        alert('Reject the request!');
+        setOpenSnackbar({
+          severity: 'info',
+          message: 'You rejecred a booking.',
+        });
+        setOpenSnackbar({
+          severity: 'info',
+          message: '',
+        });
         sethook(!hooktoupdate);
       })
       .catch((error) => {
-        meetError(error);
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
       });
   };
   let content;
@@ -1249,4 +1464,196 @@ export const GetAllBookingRequest = () => {
   }
 
   return <ReservingOwner>{content}</ReservingOwner>;
+};
+
+export const GetAllOwnerListingSummary = () => {
+  const [hooktoupdate, sethook] = useState(false);
+  const navigate = useNavigate();
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
+  const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]); // 初始化一个状态来存储从后端获取的数据
+  const [isLoading, setIsLoading] = useState(true); // 初始化一个状态来表示数据是否正在加载
+  const isMounted = useRef(true); // 使用 ref 来跟踪组件是否仍然挂载
+  useEffect(() => {
+    // 在组件卸载时取消未完成的异步操作
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    // 在组件挂载时或其他适当的生命周期中从后端获取数据
+    // 你可以使用axios、fetch或其他方法来获取数据
+    const token = localStorage.getItem('token') || '';
+    // Step 1
+    callAPIget('bookings', token)
+      .then((response) => {
+        if (isMounted.current) {
+          const AllBoooking = response as AllBookings;
+          // Step2
+          callAPIget('listings', '')
+            .then((response) => {
+              if (isMounted.current) {
+                const theResponse = response as ApiResponse;
+                // filter
+                const ownerData = theResponse.listings.filter((items) => {
+                  return (
+                    items.owner === localStorage.getItem('LoggedUserEmail')
+                  );
+                });
+                const ALLmylisting: string[] = [];
+                const ALLmyNumber: number[] = [];
+                ownerData.forEach((item) => {
+                  let totalday = 0;
+                  AllBoooking.bookings.forEach((items) => {
+                    if (items.listingId === String(item.id)) {
+                      totalday += items.dateRange.distance;
+                    }
+                  });
+                  ALLmyNumber.push(totalday);
+                  ALLmylisting.push(String(item.id));
+                });
+                // step 3
+                if (AllBoooking && ALLmylisting && ALLmyNumber) {
+                  console.log(ALLmylisting);
+                  const fillteredListing: string[] = ALLmylisting;
+                  const promises = fillteredListing.map((item, index) => {
+                    const token = localStorage.getItem('token') || '';
+                    return callAPIget('listings/' + item, token)
+                      .then((response) => {
+                        const r = response as ApiResponseSpecific;
+                        console.log(r);
+                        r.listing.totalday = ALLmyNumber[index] || 0;
+                        r.listing.id = item;
+                        console.log(r.listing.postedOn);
+                        console.log(new Date());
+                        return r;
+                      })
+                      .catch((error) => {
+                        setOpenSnackbar({
+                          severity: 'error',
+                          message: meetError(error),
+                        });
+                        setOpenSnackbar({
+                          severity: 'error',
+                          message: '',
+                        });
+                        return null; // 处理错误，返回一个默认值
+                      });
+                  });
+                  Promise.all(promises)
+                    .then((specificDataArray) => {
+                      if (isMounted.current) {
+                        // 过滤掉可能为null的值
+                        const filteredSpecificDataArray =
+                          specificDataArray.filter(
+                            (item): item is ApiResponseSpecific => item !== null
+                          );
+                        setSpecificData(filteredSpecificDataArray);
+                        setIsLoading(false);
+                      }
+                    })
+                    .catch((error) => {
+                      setOpenSnackbar({
+                        severity: 'error',
+                        message: meetError(error),
+                      });
+                      setOpenSnackbar({
+                        severity: 'error',
+                        message: '',
+                      });
+                      if (isMounted.current) {
+                        setIsLoading(false);
+                      }
+                    });
+                }
+              }
+            })
+            .catch((error) => {
+              setOpenSnackbar({
+                severity: 'error',
+                message: meetError(error),
+              });
+              setOpenSnackbar({
+                severity: 'error',
+                message: '',
+              });
+              setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
+            });
+        }
+      })
+      .catch((error) => {
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
+      });
+  }, [hooktoupdate]);
+  const ShowHistory = (HostingId:number) => {
+    const userId = localStorage.getItem('LoggedUserEmail');
+    console.log(userId);
+    if (localStorage.token) {
+      navigate(`/user/${userId}/hosting/myresveration/history/${HostingId}`);
+    } else {
+      navigate('/login');
+    }
+  };
+  let content;
+  if (isLoading) {
+    // 如果数据正在加载，显示加载中信息
+    content = <NullListing>Data is comming...</NullListing>;
+  } else if (SpecificDatas) {
+    if (SpecificDatas.length > 0) {
+      // 如果数据已加载并且不为空，渲染数据
+      content = SpecificDatas.map((item) => (
+        <ListingRowR
+          key={item.listing.id}
+          onClick={() => {
+            ShowHistory(Number(item.listing.id));
+          }}
+        >
+          {/* 在这里渲染每条数据 */}
+          <LeftPart>
+            <SmallListingImage src={item.listing.thumbnail}></SmallListingImage>
+            <ListingInfoR>
+              <ListingType>{item.listing.metadata.type}</ListingType>
+              <ListingTitle>{item.listing.title}</ListingTitle>
+              <ListingPrice>
+                Yearly Booked: {item.listing.totalday} Day
+              </ListingPrice>
+              <ListingPrice>
+                Yearly Earn: $
+                {Number(item.listing.price) * item.listing.totalday} AUD
+              </ListingPrice>
+              <ListingPrice>
+                Published{' '}
+                {item.listing.postedOn
+                  ? GetDistance(new Date(item.listing.postedOn), new Date()) ===
+                    0
+                    ? 'Today'
+                    : GetDistance(new Date(item.listing.postedOn), new Date()) +
+                      ' Days Ago'
+                  : 'Private'}
+              </ListingPrice>
+            </ListingInfoR>
+          </LeftPart>
+        </ListingRowR>
+      ));
+    } else {
+      content = <NullListing>Seems there not exist any listing</NullListing>;
+    }
+  } else {
+    // 如果数据为空，显示一个提示
+    content = <NullListing>Seems there not exist any listing</NullListing>;
+  }
+
+  return <ListingContentOwner>{content}</ListingContentOwner>;
 };

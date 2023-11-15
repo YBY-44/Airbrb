@@ -1,34 +1,25 @@
-import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import Button from '@mui/material/Button';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ButtonGroup from '@mui/material/ButtonGroup';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
 import dayjs from 'dayjs';
-import Box from '@mui/material/Box';
 import Rating from '@mui/material/Rating';
-import Typography from '@mui/material/Typography';
 import { AddReview } from './review';
 import React, {
   useState,
   useEffect,
   useRef,
   ChangeEvent,
-  LabelHTMLAttributes,
-  createContext,
   useContext,
-  ReactNode,
 } from 'react';
 import {
   useNavigate,
-  BrowserRouter as Router,
   // useParams,
   Route,
   Routes,
   useParams,
-  useLocation,
 } from 'react-router-dom';
 import {
   LoginModelDetail,
@@ -42,40 +33,22 @@ import {
   LargeHomeHeadLogoContent,
   LargeHomeHeadsearchimg,
   LargeHomeSwitchBar,
-  LargeHomeCenter,
   LargeProfile,
   LargeProfileLeftImage,
   LargeProfileOuter,
   LargeProfileRightImage,
-  LoginModel,
   AppContext,
   meetError,
   SmallHomePagecss,
   SmallHomeHead,
   LogoutModelHost,
-  SmallBottomButtonOuter,
-  SmallButtomButton1,
   SwitchContent,
-  SmallHomeBottom,
-  ErrorContext
+  ErrorContext,
 } from '../App';
-import {
-  callAPIpost,
-  CallAPIPostWithToken,
-  errorMessage,
-  callAPIget,
-  GetDistance,
-} from './API';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
+import { CallAPIPostWithToken, callAPIget, GetDistance } from './API';
 import { styled } from '@mui/material';
 import { Availability } from './publish';
-import { Mode, PriceChange, Today } from '@mui/icons-material';
-import { csCZ } from '@mui/x-date-pickers';
-type SnackbarData = {
-  severity: 'success' | 'error' | 'warning' | 'info';
-  message: string;
-};
+import { Brightness1 } from '@mui/icons-material';
 interface Review {
   score: number;
   content: string;
@@ -124,6 +97,7 @@ interface ListingContent {
 type ApiResponse = {
   listing: ListingContent;
 };
+// ----------------------------------------------css
 const BackHome = styled('button')({
   backgroundColor: 'white',
   border: '2px solid black',
@@ -256,12 +230,6 @@ const ReviewDateSmall = styled('p')({
   display: 'flex',
   letterSpacing: '0px',
 });
-
-interface ConfirmBookProps {
-  data: ListingContent;
-  isOpen: boolean;
-  close: () => void;
-}
 const CfmAll = styled('div')({
   width: '100%',
   height: '100%',
@@ -379,7 +347,6 @@ const CfmRightttxt2 = styled('p')({
   color: 'rgb(85, 85, 85)',
   wordWrap: 'break-word',
 });
-
 const CfmValuettxt = styled('p')({
   textAlign: 'left',
   margin: '0px',
@@ -433,6 +400,14 @@ const CfmHead = styled('p')({
   letterSpacing: '0.2px',
   color: 'rgb(48, 48, 48)',
 });
+// ---------------------------------------------css
+// interface for the confirm
+interface ConfirmBookProps {
+  data: ListingContent;
+  isOpen: boolean;
+  close: () => void;
+}
+// this function is the confirmation of the confirm booking.
 export const ConfirmBook: React.FC<ConfirmBookProps> = ({
   data,
   isOpen,
@@ -453,10 +428,7 @@ export const ConfirmBook: React.FC<ConfirmBookProps> = ({
     // Handle the case where contextValue is null (optional)
     return null;
   }
-  const {
-    snackbarData,
-    setOpenSnackbar
-  } = ErrorValue;
+  const { setOpenSnackbar } = ErrorValue;
 
   const ReverseBook = () => {
     if (data.CheckinDate && data.CheckoutDate) {
@@ -478,12 +450,20 @@ export const ConfirmBook: React.FC<ConfirmBookProps> = ({
             message:
               'We have sent your booking to the host and you can check the status of your booking by visiting the homepage.',
           });
+          setOpenSnackbar({
+            severity: 'success',
+            message: '',
+          });
           setConfirmState(true);
         })
         .catch((error) => {
           setOpenSnackbar({
             severity: 'error',
             message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
           });
         });
     }
@@ -604,6 +584,7 @@ export const ConfirmBook: React.FC<ConfirmBookProps> = ({
 };
 
 export const ListingDetailSmall = () => {
+  const [allimg, setallimg] = useState(false);
   const FilterValue = useContext(AppContext);
   if (!FilterValue) {
     // Handle the case where contextValue is null (optional)
@@ -760,10 +741,7 @@ export const ListingDetailSmall = () => {
     // Handle the case where contextValue is null (optional)
     return null;
   }
-  const {
-    snackbarData,
-    setOpenSnackbar
-  } = ErrorValue;
+  const { setOpenSnackbar } = ErrorValue;
 
   useEffect(() => {
     callAPIget('listings/' + HostingId, '')
@@ -789,6 +767,7 @@ export const ListingDetailSmall = () => {
       })
       .catch((error) => {
         setOpenSnackbar({ severity: 'error', message: meetError(error) });
+        setOpenSnackbar({ severity: 'error', message: '' });
         return null; // 处理错误，返回一个默认值
       });
   }, [refreshflag]);
@@ -809,7 +788,7 @@ export const ListingDetailSmall = () => {
     }
   };
   const trueKeys = Object.entries(data?.metadata.otherInfo || {})
-    .filter(([_key, value]) => value === true)
+    .filter(([key, value]) => key && value === true)
     .map(([key]) => key);
 
   if (trueKeys.length === 0) {
@@ -843,6 +822,33 @@ export const ListingDetailSmall = () => {
   const TargetMenu = useRef<HTMLDivElement | null>(null);
   const conponment = (
     <SmallHomePagecss>
+      {allimg && (
+        <AllImage>
+          <Overall></Overall>
+          <ImageList
+            sx={{
+              width: '100%',
+              height: '100%',
+              zIndex: '5',
+              position: 'absolute',
+            }}
+            cols={2}
+            rowHeight={300}
+          >
+            <Backimgsmall
+              src='/img/Back.png'
+              onClick={() => {
+                setallimg(false);
+              }}
+            ></Backimgsmall>
+            {data.metadata.images.map((item) => (
+              <ImageListItem key={item}>
+                <img src={item} alt='image' />
+              </ImageListItem>
+            ))}
+          </ImageList>
+        </AllImage>
+      )}
       <div ref={TargetMenu}>
         <Routes>
           <Route
@@ -859,15 +865,11 @@ export const ListingDetailSmall = () => {
       <Routes>
         <Route
           path='/logged/review'
-          element={<AddReview refresh={refresh}/>}
+          element={<AddReview refresh={refresh} />}
         />
       </Routes>
       <div>
-        <ConfirmBook
-          data={data}
-          isOpen={isbook}
-          close={closebook}
-        />
+        <ConfirmBook data={data} isOpen={isbook} close={closebook} />
       </div>
       <SmallHomeHead>
         <BackHome onClick={goesHome}>Homes</BackHome>
@@ -892,7 +894,12 @@ export const ListingDetailSmall = () => {
         </LargeProfile>
       </SmallHomeHead>
       <SpecificCenter ref={componentRef}>
-        <SmallThumbImg src={data?.thumbnail}></SmallThumbImg>
+        <SmallThumbImg
+          src={data?.thumbnail}
+          onClick={() => {
+            setallimg(true);
+          }}
+        ></SmallThumbImg>
         <SmallTitle>{data?.title}</SmallTitle>
         <SmallTitle2>
           {data?.metadata.type +
@@ -1054,6 +1061,7 @@ const SmallThumbImg = styled('img')({
   width: '100%',
   maxHeight: '370px',
   objectFit: 'cover',
+  cursor: 'pointer'
 });
 const ThumbImg = styled('img')({
   '@media (max-width: 1000px)': {
@@ -1282,6 +1290,7 @@ const LargeImagePart = styled('div')({
   padding: '0px 20px 0px 20px',
   display: 'flex',
   borderRadius: '20px',
+  cursor: 'pointer',
 });
 const LargeHouseInfo = styled('p')({
   fontFamily: 'Segoe UI',
@@ -1494,7 +1503,45 @@ const SmallAddress = styled('p')({
   letterSpacing: '0.3px',
   borderBottom: '1px solid rgb(225, 225, 225)',
 });
+const AllImage = styled('div')({
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  zIndex: '5',
+});
+const Overall = styled('div')({
+  position: 'absolute',
+  zIndex: '1',
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'white',
+});
+
+const Backimg = styled('img')({
+  padding: '50px 90% 55px 100px',
+  objectFit: 'contain',
+  cursor: 'pointer',
+  backgroundColor: 'rgb(255,255,255)',
+  '&:hover': {
+    backgroundColor: 'rgb(240,240,240)',
+  },
+});
+const Backimgsmall = styled('img')({
+  '@media (max-width: 500px)': {
+    padding: '50px 60% 55px 2%',
+  },
+  '@media (min-width: 500px)': {
+    padding: '50px 60% 55px 10%',
+  },
+  objectFit: 'contain',
+  cursor: 'pointer',
+  backgroundColor: 'rgb(255,255,255)',
+  '&:hover': {
+    backgroundColor: 'rgb(240,240,240)',
+  },
+});
 export const ListingDetailLarge = () => {
+  const [allimg, setallimg] = useState(false);
   const [scrollFlag, setScrollFlag] = useState(false);
   const FilterValue = useContext(AppContext);
   if (!FilterValue) {
@@ -1642,10 +1689,7 @@ export const ListingDetailLarge = () => {
     // Handle the case where contextValue is null (optional)
     return null;
   }
-  const {
-    snackbarData,
-    setOpenSnackbar
-  } = ErrorValue;
+  const { setOpenSnackbar } = ErrorValue;
 
   useEffect(() => {
     callAPIget('listings/' + HostingId, '')
@@ -1671,6 +1715,7 @@ export const ListingDetailLarge = () => {
       })
       .catch((error) => {
         setOpenSnackbar({ severity: 'error', message: meetError(error) });
+        setOpenSnackbar({ severity: 'error', message: '' });
         return null; // 处理错误，返回一个默认值
       });
   }, [refreshflag]);
@@ -1681,6 +1726,7 @@ export const ListingDetailLarge = () => {
   const ClickProfile = () => {
     setOpen(!isOpen);
   };
+
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     console.log(userId);
@@ -1700,7 +1746,7 @@ export const ListingDetailLarge = () => {
     }
   };
   const trueKeys = Object.entries(data?.metadata.otherInfo || {})
-    .filter(([_key, value]) => value === true)
+    .filter(([key, value]) => key && value === true)
     .map(([key]) => key);
 
   if (trueKeys.length === 0) {
@@ -1745,6 +1791,33 @@ export const ListingDetailLarge = () => {
   const TargetMenu = useRef<HTMLDivElement | null>(null);
   const conponment = (
     <LargeHomePagecss>
+      {allimg && (
+        <AllImage>
+          <Overall></Overall>
+          <ImageList
+            sx={{
+              width: '100%',
+              height: '100%',
+              zIndex: '5',
+              position: 'absolute',
+            }}
+            cols={2}
+            rowHeight={300}
+          >
+            <Backimg
+              src='/img/Back.png'
+              onClick={() => {
+                setallimg(false);
+              }}
+            ></Backimg>
+            {data.metadata.images.map((item) => (
+              <ImageListItem key={item}>
+                <img src={item} alt='image' />
+              </ImageListItem>
+            ))}
+          </ImageList>
+        </AllImage>
+      )}
       <div ref={TargetMenu}>
         <Routes>
           <Route
@@ -1759,11 +1832,7 @@ export const ListingDetailLarge = () => {
         </Routes>
       </div>
       <div>
-        <ConfirmBook
-          data={data}
-          isOpen={isbook}
-          close={closebook}
-        />
+        <ConfirmBook data={data} isOpen={isbook} close={closebook} />
       </div>
       <Routes>
         <Route
@@ -1773,7 +1842,12 @@ export const ListingDetailLarge = () => {
       </Routes>
       <LargeHomeHead>
         <LargeHomeHeadLogo>
-          <LargeHomeHeadLogoContent src='/img/logo_p.png'></LargeHomeHeadLogoContent>
+          <LargeHomeHeadLogoContent
+            onClick={() => {
+              reloading();
+            }}
+            src='/img/logo_p.png'
+          ></LargeHomeHeadLogoContent>
         </LargeHomeHeadLogo>
         <LargeHomeHeadSearchContent>
           <LargeHomeHeadInputInner>
@@ -1817,13 +1891,41 @@ export const ListingDetailLarge = () => {
       </LargeHomeHead>
       <SpecificCenter ref={componentRef}>
         <LargeTitle>{data?.title}</LargeTitle>
-        <LargeImagePart>
+        <LargeImagePart
+          onClick={() => {
+            setallimg(true);
+          }}
+        >
           <ThumbImg src={data?.thumbnail}></ThumbImg>
           <RightImage>
-            <OtherImg src={data?.metadata.images[0]}></OtherImg>
-            <OtherImg src={data?.metadata.images[1]}></OtherImg>
-            <OtherImg src={data?.metadata.images[2]}></OtherImg>
-            <OtherImg src={data?.metadata.images[3]}></OtherImg>
+            <OtherImg
+              src={
+                data?.metadata.images[0]
+                  ? data?.metadata.images[0]
+                  : '/img/default.png'
+              }
+            ></OtherImg>
+            <OtherImg
+              src={
+                data?.metadata.images[1]
+                  ? data?.metadata.images[1]
+                  : '/img/default.png'
+              }
+            ></OtherImg>
+            <OtherImg
+              src={
+                data?.metadata.images[2]
+                  ? data?.metadata.images[2]
+                  : '/img/default.png'
+              }
+            ></OtherImg>
+            <OtherImg
+              src={
+                data?.metadata.images[3]
+                  ? data?.metadata.images[3]
+                  : '/img/default.png'
+              }
+            ></OtherImg>
           </RightImage>
         </LargeImagePart>
         <LargeType>

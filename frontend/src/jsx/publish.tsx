@@ -1,12 +1,12 @@
 import { styled } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import dayjs from 'dayjs';
-import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
-import { meetError, LargeHomeHeadLogoContent } from '../App';
+import { useNavigate, useParams } from 'react-router-dom';
+import { meetError, LargeHomeHeadLogoContent, ErrorContext } from '../App';
 import {
   CreatChannelOverall,
   CreatNewHeader,
@@ -19,15 +19,9 @@ import {
 } from './Host';
 import {
   callAPIget,
-  CallAPIPostWithToken,
   callAPIput,
-  HoverImage,
-  Datetostring,
   GetDistance,
 } from './API';
-import { GetAllOwnerListing } from './get_all_listing';
-import { Kitchen, Margin, Tv, Wifi } from '@mui/icons-material';
-import styledEngine from '@mui/styled-engine';
 export interface Availability {
   startDate: Date;
   endDate: Date;
@@ -45,6 +39,12 @@ export const ConfirmPublish: React.FC<ConfirmCreatProps> = ({
   isOpen,
   close,
 }) => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
   const { HostingId } = useParams();
   const navigate = useNavigate();
   const PublishHosting = () => {
@@ -55,9 +55,25 @@ export const ConfirmPublish: React.FC<ConfirmCreatProps> = ({
         close();
         const userId = localStorage.getItem('LoggedUserEmail');
         navigate(`/user/${userId}/hosting/myhosting`);
-        alert('Publish hosting successful !');
+        setOpenSnackbar({
+          severity: 'success',
+          message: 'Publish Successfully !',
+        });
+        setOpenSnackbar({
+          severity: 'success',
+          message: '',
+        });
       })
-      .catch((error) => meetError(error));
+      .catch((error) => {
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+      });
   };
 
   let conponment = <div></div>;
@@ -443,6 +459,15 @@ const ErrorMsg = styled('p')({
   fontSize: '14px',
 });
 export const PublishPage = () => {
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const {
+    setOpenSnackbar
+  } = ErrorValue;
+
   const [data, setData] = useState<Availability[]>([]);
   const [isOpen, setOpen] = useState(false);
   const [Loading, setLoading] = useState(false);
@@ -510,13 +535,18 @@ export const PublishPage = () => {
             Responsedata.listing.metadata.otherInfo.WashingMachine
           );
           const img0 = Responsedata.listing.thumbnail;
-          const allimg = Responsedata.listing.metadata.images;
           setThumbil(img0);
-          // setSelectedImageString(allimg);
           setLoading(true);
         })
         .catch((error) => {
-          meetError(error);
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
           return null; // 处理错误，返回一个默认值
         });
     }
