@@ -1467,7 +1467,6 @@ export const GetAllBookingRequest = () => {
 };
 
 export const GetAllOwnerListingSummary = () => {
-  const [hooktoupdate, sethook] = useState(false);
   const navigate = useNavigate();
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
@@ -1596,7 +1595,7 @@ export const GetAllOwnerListingSummary = () => {
         });
         setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
       });
-  }, [hooktoupdate]);
+  }, []);
   const ShowHistory = (HostingId:number) => {
     const userId = localStorage.getItem('LoggedUserEmail');
     console.log(userId);

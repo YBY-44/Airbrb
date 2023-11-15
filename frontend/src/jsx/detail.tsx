@@ -48,7 +48,6 @@ import {
 import { CallAPIPostWithToken, callAPIget, GetDistance } from './API';
 import { styled } from '@mui/material';
 import { Availability } from './publish';
-import { Brightness1 } from '@mui/icons-material';
 interface Review {
   score: number;
   content: string;
