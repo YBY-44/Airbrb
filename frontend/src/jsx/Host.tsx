@@ -38,9 +38,7 @@ import {
   GetAllBookingRequest,
   GetAllOwnerListingSummary,
 } from './get_all_listing';
-export const getAllReservations = () => {
-  console.log('111');
-};
+// css style---------------------------------
 const ContentCenterHost = styled('div')({
   display: 'flex',
   flexDirection: 'column',
@@ -113,69 +111,6 @@ export const CreatButton = styled('button')({
     color: 'white',
   },
 });
-export const ReservingContent = () => {
-  return (
-    <ContentCenterHost>
-      <CenterTitleHost>
-        <HeaderSubtxtHostR>
-          Your Resveration & Hosting Summary
-        </HeaderSubtxtHostR>
-      </CenterTitleHost>
-      <HostContentR>
-        <GetAllBookingRequest />
-        <GetAllOwnerListingSummary />
-      </HostContentR>
-    </ContentCenterHost>
-  );
-};
-export const HostingContent = () => {
-  return (
-    <ContentCenterHost>
-      <CenterTitleHost>
-        <HeaderSubtxtHost>Your Hosting</HeaderSubtxtHost>
-      </CenterTitleHost>
-      <HostContent>
-        <GetAllOwnerListing />
-      </HostContent>
-    </ContentCenterHost>
-  );
-};
-
-interface ConfirmCreatProps {
-  data: {
-    title: string;
-    address: {
-      City: string;
-      Country: string;
-      Postcode: string;
-      State: string;
-      Street: string;
-    };
-    price: string;
-    thumbnail: string;
-    metadata: {
-      type: string;
-      bedInfo: {
-        Guests: string;
-        Bedrooms: string;
-        Beds: string;
-        Bathrooms: string;
-      };
-      otherInfo: {
-        WiFi: boolean;
-        TV: boolean;
-        Kitchen: boolean;
-        WashingMachine: boolean;
-        AirConditioning: boolean;
-        FreeParking: boolean;
-      };
-      images: string[];
-    };
-  };
-  isOpen: boolean;
-  close: () => void;
-}
-
 const CfmAll = styled('div')({
   width: '100%',
   height: '100%',
@@ -336,12 +271,79 @@ const CfmHead = styled('p')({
   letterSpacing: '0.2px',
   color: 'rgb(48, 48, 48)',
 });
-
+// css style---------------------------------
+// this is the reserving part
+export const ReservingContent = () => {
+  return (
+    <ContentCenterHost>
+      <CenterTitleHost>
+        <HeaderSubtxtHostR>
+          Your Resveration & Hosting Summary
+        </HeaderSubtxtHostR>
+      </CenterTitleHost>
+      <HostContentR>
+        <GetAllBookingRequest />
+        <GetAllOwnerListingSummary />
+      </HostContentR>
+    </ContentCenterHost>
+  );
+};
+// this is the hosting part
+export const HostingContent = () => {
+  return (
+    <ContentCenterHost>
+      <CenterTitleHost>
+        <HeaderSubtxtHost>Your Hosting</HeaderSubtxtHost>
+      </CenterTitleHost>
+      <HostContent>
+        <GetAllOwnerListing />
+      </HostContent>
+    </ContentCenterHost>
+  );
+};
+// this interface is used to creat a hosing
+interface ConfirmCreatProps {
+  data: {
+    title: string;
+    address: {
+      City: string;
+      Country: string;
+      Postcode: string;
+      State: string;
+      Street: string;
+    };
+    price: string;
+    thumbnail: string;
+    metadata: {
+      type: string;
+      bedInfo: {
+        Guests: string;
+        Bedrooms: string;
+        Beds: string;
+        Bathrooms: string;
+      };
+      otherInfo: {
+        WiFi: boolean;
+        TV: boolean;
+        Kitchen: boolean;
+        WashingMachine: boolean;
+        AirConditioning: boolean;
+        FreeParking: boolean;
+      };
+      images: string[];
+    };
+  };
+  isOpen: boolean;
+  close: () => void;
+}
+// this is the confirmcreat window
+// when user try to creat a new hosting this window shown
 export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
   data,
   isOpen,
   close,
 }) => {
+  // get the function to set the error or success prompt
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
@@ -349,25 +351,30 @@ export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
   }
   const { setOpenSnackbar } = ErrorValue;
   const navigate = useNavigate();
+  // when user confirm creat do this
   const CreatHosting = () => {
     const token = localStorage.getItem('token') || '';
     CallAPIPostWithToken('listings/new', data, token)
       .then(() => {
+        // when success prompt the success information
         setOpenSnackbar({ severity: 'success', message: 'Creat successful!' });
         setOpenSnackbar({ severity: 'success', message: '' });
         console.log('success');
+        // close this window and goes back to the homepage
         const userId = localStorage.getItem('LoggedUserEmail');
         close();
         navigate(`/user/${userId}/hosting/myhosting`);
       })
       .catch((error) => {
+        // when meet error show the error
         setOpenSnackbar({ severity: 'error', message: meetError(error) });
         setOpenSnackbar({ severity: 'error', message: '' });
       });
   };
-
+  // set the returned conponment
   let conponment = <div></div>;
   if (isOpen) {
+    // get the total address
     const address =
       data.address.Street +
       ', ' +
@@ -378,6 +385,7 @@ export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
       data.address.Country +
       ', ' +
       data.address.Postcode;
+    // get all facilicate state
     const items: {
       [key: string]: boolean;
     } = {
@@ -388,12 +396,14 @@ export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
       AirConditioning: data.metadata.otherInfo.AirConditioning,
       FreeParking: data.metadata.otherInfo.FreeParking,
     };
+    // filter all true value for facilities
     const trueKeys = Object.keys(items).filter((key) => {
       return items[key] === true;
     });
     if (trueKeys.length === 0) {
       trueKeys.push('No additional Facilities');
     }
+    // loading the conponment
     conponment = (
       <CfmAll>
         <CfmBack></CfmBack>
@@ -463,27 +473,32 @@ export const ConfirmCreat: React.FC<ConfirmCreatProps> = ({
         </CfmContent>
       </CfmAll>
     );
-    console.log(data);
   }
+  // return the page if isOpen is true
   return isOpen ? conponment : null;
 };
+// when user try to edit a existed hosting this window shown
 export const ConfirmEdit: React.FC<ConfirmCreatProps> = ({
   data,
   isOpen,
   close,
 }) => {
+  // get the function to show the prompt
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
   const { setOpenSnackbar } = ErrorValue;
+  // get current listingid
   const { HostingId } = useParams();
   const navigate = useNavigate();
+  // when user confirm editing edit.
   const EditHosting = () => {
     const token = localStorage.getItem('token') || '';
     callAPIput('listings/' + HostingId, data, token)
       .then(() => {
+        // when edit success tell the user
         setOpenSnackbar({
           severity: 'success',
           message: 'Your hosting has been updated !',
@@ -493,11 +508,13 @@ export const ConfirmEdit: React.FC<ConfirmCreatProps> = ({
           message: '',
         });
         console.log('success');
+        // goes back to the homepage
         close();
         const userId = localStorage.getItem('LoggedUserEmail');
         navigate(`/user/${userId}/hosting/myhosting`);
       })
       .catch((error) => {
+        // when meet error show the error
         setOpenSnackbar({
           severity: 'error',
           message: meetError(error),
@@ -508,8 +525,11 @@ export const ConfirmEdit: React.FC<ConfirmCreatProps> = ({
         });
       });
   };
+  // inital the page
   let conponment = <div></div>;
+  // if the page is opend
   if (isOpen) {
+    // get the address
     const address =
       data.address.Street +
       ', ' +
@@ -520,6 +540,7 @@ export const ConfirmEdit: React.FC<ConfirmCreatProps> = ({
       data.address.Country +
       ', ' +
       data.address.Postcode;
+    // set the facility
     const items: {
       [key: string]: boolean;
     } = {
@@ -530,12 +551,14 @@ export const ConfirmEdit: React.FC<ConfirmCreatProps> = ({
       AirConditioning: data.metadata.otherInfo.AirConditioning,
       FreeParking: data.metadata.otherInfo.FreeParking,
     };
+    // filter trueth
     const trueKeys = Object.keys(items).filter((key) => {
       return items[key] === true;
     });
     if (trueKeys.length === 0) {
       trueKeys.push('No additional Facilities');
     }
+    // return the conponment
     conponment = (
       <CfmAll>
         <CfmBack></CfmBack>
@@ -607,8 +630,10 @@ export const ConfirmEdit: React.FC<ConfirmCreatProps> = ({
     );
     console.log(data);
   }
+  // open this page if isOpen
   return isOpen ? conponment : null;
 };
+// css style
 export const CreatChannelOverall = styled('div')({
   display: 'flex',
   flexDirection: 'column',
@@ -720,7 +745,6 @@ const QoneShowSelect = styled('label')<QoneShowSelectProps>`
     border: 2px solid rgb(0, 0, 0);
   `}
 `;
-
 const QfourShowSelect = styled('label')<QoneShowSelectProps>`
   display: flex;
   justify-content: center;
@@ -748,7 +772,6 @@ const QfourShowSelect = styled('label')<QoneShowSelectProps>`
   background-color: rgb(245, 245, 245);
 `}
 `;
-
 const CreateError = styled('p')({
   fontSize: '14px',
   width: '90%',
@@ -779,7 +802,6 @@ const QtwoQsub = styled('p')({
   textAlign: 'left',
   color: 'rgb(131, 131, 131)',
 });
-
 const QtwoQasw = styled('div')({
   display: 'flex',
   flexWrap: 'wrap',
@@ -906,7 +928,6 @@ const Q7aDiv = styled('div')({
   width: '70%',
   height: '300px',
 });
-
 const LasteachImage = styled('div')({
   display: 'flex',
   marginTop: '30px',
@@ -948,6 +969,8 @@ const UploadIMG = styled('img')({
     color: 'rgb(20, 20, 20)',
   },
 });
+// css style
+// interface when user try to creatHosting
 interface ListingContent {
   title: string;
   address: {
@@ -978,26 +1001,31 @@ interface ListingContent {
     images: string[];
   };
 }
-
+// CreatHostingPage
 export const CreateHosting = () => {
+  // get the message prompt method
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
   const { setOpenSnackbar } = ErrorValue;
+  // link the ref for thumb and other img
   const RefT = useRef<HTMLInputElement | null>(null);
   const RefFile = useRef<HTMLInputElement | null>(null);
+  // if the button click then open the file loader
   const HandleT = () => {
     if (RefT.current) {
       RefT.current.click();
     }
   };
+  // if the button click then open the file loader
   const HandleFile = () => {
     if (RefFile.current) {
       RefFile.current.click();
     }
   };
+  // intitial the creating hosting data
   const initialListingContent: ListingContent = {
     title: '',
     // owner: '',
@@ -1030,51 +1058,66 @@ export const CreateHosting = () => {
     },
     // reviews: [],
   };
+  // initial the creating hosting data
   const [data, setData] = useState<ListingContent>(initialListingContent);
+  // inital the confirm creat false
   const [isOpen, setOpen] = useState(false);
   const SelfClose = () => {
     setOpen(false);
   };
   const navigate = useNavigate();
+  // set title empty;
   const [lengthOfTitle, setlength] = useState(0);
+  // set type empty;
   const [HostingType, setType] = useState('');
+  // set contry empty
   const [Country, setCountry] = useState('');
   const handleCountryChange = (event: ChangeEvent<HTMLInputElement>) => {
     setCountry(event.target.value);
   };
+  // set street empty
   const [Street, setStreet] = useState('');
   const handleStreetChange = (event: ChangeEvent<HTMLInputElement>) => {
     setStreet(event.target.value);
   };
+  // set city empty
   const [City, setCity] = useState('');
   const handleCityChange = (event: ChangeEvent<HTMLInputElement>) => {
     setCity(event.target.value);
   };
+  // set state empty
   const [State, setState] = useState('');
   const handleStateChange = (event: ChangeEvent<HTMLInputElement>) => {
     setState(event.target.value);
   };
+  // set postcode empty
   const [Postcode, setPostcode] = useState('');
   const handlePostcodeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setPostcode(event.target.value);
   };
+  // set guest empty
   const [Guest, setGuest] = useState('');
   const handleGuestChange = (event: ChangeEvent<HTMLInputElement>) => {
     setGuest(event.target.value);
   };
+  // set bedroom empty
   const [Bedroom, setBedroom] = useState('');
   const handleBedroomChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBedroom(event.target.value);
   };
+  // set bed empty
   const [Bed, setBed] = useState('');
   const handleBedChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBed(event.target.value);
   };
+  // set bedathroom empty
   const [Bathroom, setBathroom] = useState('');
   const handleBathroomChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBathroom(event.target.value);
   };
+  // set thumbil empty
   const [Thumbil, setThumbil] = useState('');
+  // set all facility false
   const [isAirConditioningChecked, setAirConditioningChecked] = useState(false);
   const [isWifiChecked, setWifiChecked] = useState(false);
   const [isTVChecked, setTVChecked] = useState(false);
@@ -1088,21 +1131,25 @@ export const CreateHosting = () => {
     setTitle(event.target.value);
     setlength(event.target.value.length);
   };
+  // set price empty
   const [Prise, setPrice] = useState('');
   const handlePriceChange = (event: ChangeEvent<HTMLInputElement>) => {
     setPrice(event.target.value);
   };
+  // when the type is changed
   const ChangeType = (event: React.MouseEvent) => {
     const target = event.target as HTMLElement;
     if (target.id) {
       setType(target.id);
     }
   };
+  // goes to the host page
   const goesHost = () => {
     setData(initialListingContent);
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myhosting`);
   };
+  // set all errorText shown false
   const [ErrorText1, setErrorText1] = useState(false);
   const [ErrorText2, setErrorText2] = useState(false);
   const [ErrorText3, setErrorText3] = useState(false);
@@ -1119,6 +1166,7 @@ export const CreateHosting = () => {
     setErrorText6(false);
     setErrorText7(false);
   };
+  // set all scroll position empty
   const [errorContent, setErrorContent] = useState('');
   const scrollToQ1 = useRef<HTMLDivElement | null>(null);
   const scrollToQ2 = useRef<HTMLDivElement | null>(null);
@@ -1127,46 +1175,51 @@ export const CreateHosting = () => {
   const scrollToQ5 = useRef<HTMLDivElement | null>(null);
   const scrollToQ6 = useRef<HTMLDivElement | null>(null);
   const scrollToQ7 = useRef<HTMLDivElement | null>(null);
-
+  // set all image empty
   const [AllImaegsString, setSelectedImageString] = useState<string[]>([]);
+  // convert the image to string
   const convertImageToBase64 = (file: File) => {
     return new Promise((resolve, reject) => {
+      // read the image
       const reader = new FileReader();
       reader.onload = (event: ProgressEvent<FileReader>) => {
+        // set the image
         if (event.target) {
           const base64String = event.target.result;
           resolve(base64String);
         }
       };
+      // when meet error
       reader.onerror = (error) => {
         reject(error);
       };
-
       reader.readAsDataURL(file);
     });
   };
-
+  // convert all images to string
   const convertAllImagesToBase64 = (imageFiles: File[]) => {
     const base64Promises = imageFiles.map((file) => convertImageToBase64(file));
     return Promise.all(base64Promises);
   };
+  // check a image is a 64base Image
   const isValidBase64Image = (base64String: string) => {
+    // if not valid Base64 image
     if (!base64String.startsWith('data:image/')) {
-      console.log('1');
-      return false; // 不是有效的 Base64 图像数据
+      return false;
     }
     try {
+      // if the image is empty
       if (base64String.trim() === '') {
-        console.log('1');
         return false;
       }
       const datas = base64String;
       const realdata = String(datas.split(',')[1]);
       // Decode the base64 string
       const decodedData = btoa(atob(realdata));
-      // return /^[\w+/]*[=]*$/.test(decodedData);
+      // if the decode and encode is same then true;
       return decodedData === realdata;
     } catch (error) {
+      // when meet error show error
       setOpenSnackbar({
         severity: 'error',
         message: 'Your image is not follow 64base encode !',
@@ -1179,79 +1232,109 @@ export const CreateHosting = () => {
       return false; // Invalid base64 or unable to decode
     }
   };
+  // add the thumbil to the page
   const AddThumbil = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      const file = files[0]; // 获取第一个文件
+      // get the first element
+      const file = files[0];
+      // start render
       const reader = new FileReader();
       if (file) {
+        // loading these image
         reader.onload = (event: ProgressEvent<FileReader>) => {
           if (event.target) {
+            // if the data is valid then set it else prompt error
             const base64Data = event.target.result as string;
             if (isValidBase64Image(base64Data)) {
-              // 合法的文件
+              // valid file
               setAllfalse();
               console.log(base64Data);
               setThumbil(base64Data);
             } else {
-              // 不合法的文件
+              // invalid file
               setAllfalse();
               setErrorContent('Not a valid image!');
               setErrorText7(true);
             }
           }
         };
-
+        // when meet error
         reader.onerror = (event: ProgressEvent<FileReader>) => {
+          // if the target is not null
           if (event.target) {
+            // show error
             console.error('Error reading file:', event.target.error);
             setAllfalse();
             setErrorContent('Error reading file');
             setErrorText7(true);
           }
         };
-
+        // start read the file
         reader.readAsDataURL(file);
       }
     }
   };
+  // initial the file is null
   const [fileInputValue, setFileInputValue] = useState('');
+  // add the image to the page
   const AddImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // get the files
     const files = event.target.files;
+    // if the files is not null
     if (files && files.length > 0) {
+      // get the all files
       const promises = Array.from(files).map((file) => {
         return new Promise((resolve, reject) => {
+          // read the file
           const reader = new FileReader();
+          // when the file is loaded
           reader.onload = (event: ProgressEvent<FileReader>) => {
+            // if the target is not null
             if (event.target) {
+              // get the base64 string
               const base64Data = event.target.result as string;
+              // if the image is valid
               if (isValidBase64Image(base64Data)) {
+                // valid file
                 resolve(file);
               } else {
+                // invalid file
                 reject(new Error('Not a valid image!'));
               }
             }
           };
+          // when meet error
           reader.onerror = (event: ProgressEvent<FileReader>) => {
+            // if the target is not null
             if (event.target) {
+              // show error
               console.error('Error reading file:', event.target.error);
               reject(new Error('Error reading file'));
             }
           };
+          // start read the file
           reader.readAsDataURL(file);
         });
       });
-
+      // when all files is loaded
       Promise.all(promises)
+        // if the files is valid
         .then((results) => {
+          // get the valid files
           const validFiles: File[] = results as File[];
+          // set all errormessgae hidden
           setAllfalse();
+          // set the file input value
           convertAllImagesToBase64(validFiles)
             .then((base64Strings) => {
+              // add the image to the page
               const base64array = base64Strings as string[];
               setSelectedImageString([...AllImaegsString, ...base64array]);
             })
             .catch((error) => {
+              // if the image is not valid
+              // show error
               setOpenSnackbar({
                 severity: 'error',
                 message: 'Your Image upload has some error, please try again!',
@@ -1260,44 +1343,60 @@ export const CreateHosting = () => {
                 severity: 'error',
                 message: '',
               });
+              // show error
               console.error(error);
             });
+          // set the file input value to null
           setFileInputValue('');
         })
         .catch((error) => {
+          // if the image is not valid
+          // show error
           setOpenSnackbar({
             severity: 'error',
             message: 'Your Image upload has some error, please try again!',
           });
+          // show error
           setOpenSnackbar({
             severity: 'error',
             message: '',
           });
+          // set all errormessgae hidden
           setAllfalse();
+          // show error
           setErrorContent(error);
+          // scroll to the error message
           setErrorText7(true);
         });
     }
   };
+  // remove the image from the page
   const RemoveImage = (index: string) => {
-    // 创建新的图片列表，排除要移除的图片
+    // create new image list, remove the image
     const updatedImagesString = AllImaegsString.filter(
       (_, i) => String(i) !== index
     );
     setSelectedImageString(updatedImagesString);
   };
+  // scroll to a element
   const scrollToElement = (
     ref: React.MutableRefObject<HTMLDivElement | null>
   ) => {
+    // if the ref is not null
     if (ref.current) {
+      // scroll to the element
       console.log(ref.current);
       ref.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
+  // creat a new hosting
   const CreateNow = () => {
+    // the price pattern
     const pricePattern = /^[1-9]\d{0,4}$/;
+    // set confirmflag to true
     let Confirmflag = true;
     if (data) {
+      // inital the data
       data.title = String(Title);
       data.price = String(Prise);
       data.title = String(Title);
@@ -1319,6 +1418,7 @@ export const CreateHosting = () => {
       data.metadata.otherInfo.WashingMachine = isWashingmachineChecked;
       data.metadata.otherInfo.WiFi = isWifiChecked;
       data.thumbnail = Thumbil;
+      // if the title is empty
       if (data.metadata.type.length === 0) {
         console.log('no type');
         Confirmflag = false;
@@ -1327,37 +1427,45 @@ export const CreateHosting = () => {
         setErrorText1(true);
         scrollToElement(scrollToQ1);
       }
+      // if the address is not empty
       if (Confirmflag && data.address) {
         setAllfalse();
         const letterPattern = /[a-zA-Z]+/;
         const numericPattern = /^[0-9]+$/;
+        // if the content is not valid
         if (!letterPattern.test(Country)) {
           console.log('invalid country');
           setErrorContent('Your country name is invalid');
           Confirmflag = false;
         } else if (!letterPattern.test(Street)) {
+          // if the street is not valid
           setErrorContent('Your street name is invalid');
           Confirmflag = false;
           console.log('invalid country');
         } else if (!letterPattern.test(City)) {
+          // if the city is not valid
           setErrorContent('Your city name is invalid');
           Confirmflag = false;
           console.log('invalid country');
         } else if (!letterPattern.test(State)) {
+          // if the state is not valid
           setErrorContent('Your state name is invalid');
           Confirmflag = false;
           console.log('invalid country');
         } else if (!numericPattern.test(Postcode)) {
+          // if the postcode is not valid
           setErrorContent('Your Postcode name is invalid');
           Confirmflag = false;
           console.log('invalid postcode');
         }
         if (!Confirmflag) {
+          // if the errorText is not valid
           setErrorText2(true);
           console.log(scrollToQ2);
           scrollToElement(scrollToQ2);
         }
       }
+      // if the title is empty
       if (Confirmflag && data.title.length === 0) {
         console.log('no title');
         setAllfalse();
@@ -1366,6 +1474,7 @@ export const CreateHosting = () => {
         scrollToElement(scrollToQ5);
         Confirmflag = false;
       }
+      // if the price is empty
       if (Confirmflag && !pricePattern.test(data.price)) {
         console.log('invalid Price');
         setAllfalse();
@@ -1374,6 +1483,7 @@ export const CreateHosting = () => {
         Confirmflag = false;
         scrollToElement(scrollToQ6);
       }
+      // if the image is empty
       if (Confirmflag && Thumbil === '') {
         setAllfalse();
         setErrorContent('You must show your hosting pictures to us');
@@ -1381,10 +1491,12 @@ export const CreateHosting = () => {
         Confirmflag = false;
         scrollToElement(scrollToQ7);
       }
+      // if the confirmflag is true
       if (Confirmflag) {
+        // set the image to the data
         data.metadata.images = AllImaegsString;
+        // open confirm page
         setOpen(true);
-        console.log(data);
       }
       console.log(data);
     }
@@ -1710,27 +1822,31 @@ export const CreateHosting = () => {
     </CreatChannelOverall>
   );
 };
-
+// EditHostingPage
 export const EditHosting = () => {
+  // get the message prompt method
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
   const { setOpenSnackbar } = ErrorValue;
-
+  // link two ref
   const RefT = useRef<HTMLInputElement | null>(null);
   const RefFile = useRef<HTMLInputElement | null>(null);
+  // when the user click the upload button, the input will be clicked
   const HandleT = () => {
     if (RefT.current) {
       RefT.current.click();
     }
   };
+  // when the user click the upload button, the input will be clicked
   const HandleFile = () => {
     if (RefFile.current) {
       RefFile.current.click();
     }
   };
+  // intial the data
   const initial = {
     title: '',
     // owner: '',
@@ -1763,59 +1879,79 @@ export const EditHosting = () => {
     },
     // reviews: [],
   };
+  // get the id from the url
   const { HostingId } = useParams();
+  // inital the data
   const [data, setData] = useState<ListingContent | null>(null);
+  // set open state false
   const [isOpen, setOpen] = useState(false);
+  // get the token from the localstorage
   const token = localStorage.getItem('token') || '';
+  // close the modal
   const SelfClose = () => {
     setOpen(false);
   };
+  // use the navigate
   const navigate = useNavigate();
+  // inital the titlte length
   const [lengthOfTitle, setlength] = useState(0);
+  // initial the hosting type
   const [HostingType, setType] = useState('');
+  // inital the country
   const [Country, setCountry] = useState('');
   const handleCountryChange = (event: ChangeEvent<HTMLInputElement>) => {
     setCountry(event.target.value);
   };
+  // inital the street
   const [Street, setStreet] = useState('');
   const handleStreetChange = (event: ChangeEvent<HTMLInputElement>) => {
     setStreet(event.target.value);
   };
+  // inital the city
   const [City, setCity] = useState('');
   const handleCityChange = (event: ChangeEvent<HTMLInputElement>) => {
     setCity(event.target.value);
   };
+  // inital the state
   const [State, setState] = useState('');
   const handleStateChange = (event: ChangeEvent<HTMLInputElement>) => {
     setState(event.target.value);
   };
+  // inital the postcode
   const [Postcode, setPostcode] = useState('');
   const handlePostcodeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setPostcode(event.target.value);
   };
+  // inital the guest number
   const [Guest, setGuest] = useState('');
   const handleGuestChange = (event: ChangeEvent<HTMLInputElement>) => {
     setGuest(event.target.value);
   };
+  // inital the bedroom number
   const [Bedroom, setBedroom] = useState('');
   const handleBedroomChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBedroom(event.target.value);
   };
+  // inital the bed number
   const [Bed, setBed] = useState('');
   const handleBedChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBed(event.target.value);
   };
+  // inital the bathroom number
   const [Bathroom, setBathroom] = useState('');
   const handleBathroomChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBathroom(event.target.value);
   };
+  // inital the thumbnail
   const [Thumbil, setThumbil] = useState('');
+  // inital all the facilities state
   const [isAirConditioningChecked, setAirConditioningChecked] = useState(false);
   const [isWifiChecked, setWifiChecked] = useState(false);
   const [isTVChecked, setTVChecked] = useState(false);
   const [isKitchenChecked, setKitchenChecked] = useState(false);
   const [isFreeParkingChecked, setFreeParkingChecked] = useState(false);
   const [isWashingmachineChecked, setWashingmachineChecked] = useState(false);
+  // inital title
   const [Title, setTitle] = useState('');
   const handleTitleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -1823,20 +1959,24 @@ export const EditHosting = () => {
     setTitle(event.target.value);
     setlength(event.target.value.length);
   };
+  // inital the price
   const [Prise, setPrice] = useState('');
   const handlePriceChange = (event: ChangeEvent<HTMLInputElement>) => {
     setPrice(event.target.value);
   };
+  // when the hosting type change, the state will change
   const ChangeType = (event: React.MouseEvent) => {
     const target = event.target as HTMLElement;
     if (target.id) {
       setType(target.id);
     }
   };
+  // when the user click the back button, the user will go back to the hosting page
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myhosting`);
   };
+  // set all error text false
   const [ErrorText1, setErrorText1] = useState(false);
   const [ErrorText2, setErrorText2] = useState(false);
   const [ErrorText3, setErrorText3] = useState(false);
@@ -1853,6 +1993,7 @@ export const EditHosting = () => {
     setErrorText6(false);
     setErrorText7(false);
   };
+  // set all scroll to false
   const [errorContent, setErrorContent] = useState('');
   const scrollToQ1 = useRef<HTMLDivElement | null>(null);
   const scrollToQ2 = useRef<HTMLDivElement | null>(null);
@@ -1861,47 +2002,55 @@ export const EditHosting = () => {
   const scrollToQ5 = useRef<HTMLDivElement | null>(null);
   const scrollToQ6 = useRef<HTMLDivElement | null>(null);
   const scrollToQ7 = useRef<HTMLDivElement | null>(null);
-
+  // set the image empty
   const [AllImaegsString, setSelectedImageString] = useState<string[]>([]);
+  // convert the image to base64
   const convertImageToBase64 = (file: File) => {
     return new Promise((resolve, reject) => {
+      // read the file
       const reader = new FileReader();
+      // load the file
       reader.onload = (event: ProgressEvent<FileReader>) => {
         if (event.target) {
+          // get the base64 string
           const base64String = event.target.result;
           resolve(base64String);
         }
       };
-
       reader.onerror = (error) => {
+        // when the file is not read, reject the promise
         reject(error);
       };
-
+      // read the file as Data URL
       reader.readAsDataURL(file);
     });
   };
-
+  // convert all the images to base64
   const convertAllImagesToBase64 = (imageFiles: File[]) => {
     const base64Promises = imageFiles.map((file) => convertImageToBase64(file));
     return Promise.all(base64Promises);
   };
+  // when the user upload the image, the image will be convert to base64
   const isValidBase64Image = (base64String: string) => {
+    // Check if base64 string is valid
     if (!base64String.startsWith('data:image/')) {
-      console.log('1');
-      return false; // 不是有效的 Base64 图像数据
+      return false;
     }
+    // Remove extra characters added to the end of the string
     try {
+      // if the image is empty, return false
       if (base64String.trim() === '') {
-        console.log('1');
         return false;
       }
+      // get the base64 string
       const datas = base64String;
       const realdata = String(datas.split(',')[1]);
       // Decode the base64 string
       const decodedData = btoa(atob(realdata));
-      // return /^[\w+/]*[=]*$/.test(decodedData);
+      // Check if decoded data is not corrupted
       return decodedData === realdata;
     } catch (error) {
+      // wehn meet the error, return false
       setOpenSnackbar({
         severity: 'error',
         message: 'Your Image not follow 64base encoded !',
@@ -1910,33 +2059,46 @@ export const EditHosting = () => {
         severity: 'error',
         message: '',
       });
+      // show error
       console.log(error);
       return false; // Invalid base64 or unable to decode
     }
   };
+  // add the thumbnail
   const AddThumbil = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // get the file
     const files = event.target.files;
+    // if the file is not empty
     if (files && files.length > 0) {
-      const file = files[0]; // 获取第一个文件
+      // get the first file
+      const file = files[0];
+      // read the file
       const reader = new FileReader();
+      // if the file is not empty
       if (file) {
+        // load the file
         reader.onload = (event: ProgressEvent<FileReader>) => {
+          // if the event is not empty
           if (event.target) {
+            // get the base64 string
             const base64Data = event.target.result as string;
+            // if the base64 string is valid
             if (isValidBase64Image(base64Data)) {
-              // 合法的文件
+              // set all error text false
               setAllfalse();
+              // set the thumbnail
               console.log(base64Data);
               setThumbil(base64Data);
             } else {
-              // 不合法的文件
+              // set all error text false
               setAllfalse();
+              // show error
               setErrorContent('Not a valid image!');
               setErrorText7(true);
             }
           }
         };
-
+        // when the file is not read, show error
         reader.onerror = (event: ProgressEvent<FileReader>) => {
           if (event.target) {
             console.error('Error reading file:', event.target.error);
@@ -1950,43 +2112,62 @@ export const EditHosting = () => {
       }
     }
   };
+  // inital the file input value
   const [fileInputValue, setFileInputValue] = useState('');
+  // when the user upload the image, the image will be convert to base64
   const AddImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // get the file
     const files = event.target.files;
+    // if the file is not empty
     if (files && files.length > 0) {
+      // get all files
       const promises = Array.from(files).map((file) => {
         return new Promise((resolve, reject) => {
+          // read the file
           const reader = new FileReader();
+          // load the file
           reader.onload = (event: ProgressEvent<FileReader>) => {
+            // if the event is not empty
             if (event.target) {
+              // get the base64 string
               const base64Data = event.target.result as string;
               if (isValidBase64Image(base64Data)) {
+                // resolve the file
                 resolve(file);
               } else {
+                // reject the file
                 reject(new Error('Not a valid image!'));
               }
             }
           };
+          // when the file is not read, reject the promise
           reader.onerror = (event: ProgressEvent<FileReader>) => {
             if (event.target) {
               console.error('Error reading file:', event.target.error);
               reject(new Error('Error reading file'));
             }
           };
+          // read the file as Data URL
           reader.readAsDataURL(file);
         });
       });
-
+      // when all the files are valid
       Promise.all(promises)
         .then((results) => {
+          // get all the valid files
           const validFiles: File[] = results as File[];
+          // set all error text false
           setAllfalse();
+          // set the file input value
           convertAllImagesToBase64(validFiles)
+            // when all the images are convert to base64
             .then((base64Strings) => {
+              // set the file input value
               const base64array = base64Strings as string[];
               setSelectedImageString([...AllImaegsString, ...base64array]);
             })
             .catch((error) => {
+              // show error
               setOpenSnackbar({
                 severity: 'error',
                 message:
@@ -1998,9 +2179,11 @@ export const EditHosting = () => {
               });
               console.error(error);
             });
+          // set the file input empty
           setFileInputValue('');
         })
         .catch((error) => {
+          // when meet error
           setOpenSnackbar({
             severity: 'error',
             message:
@@ -2010,33 +2193,43 @@ export const EditHosting = () => {
             severity: 'error',
             message: '',
           });
+          // set all error text false
           setAllfalse();
+          // show error
           setErrorContent(error);
           setErrorText7(true);
         });
     }
   };
+  // when the user remove the image
   const RemoveImage = (index: string) => {
-    // 创建新的图片列表，排除要移除的图片
+    // create new image list, exclude the image that need to remove
     const updatedImagesString = AllImaegsString.filter(
       (_, i) => String(i) !== index
     );
+    // set the new image list
     setSelectedImageString(updatedImagesString);
   };
+  // scroll to the element
   const scrollToElement = (
     ref: React.MutableRefObject<HTMLDivElement | null>
   ) => {
+    // if the ref is not empty
     if (ref.current) {
+      // scroll to the element
       console.log(ref.current);
       ref.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
+  // the response type of the API
   type ApiResponse = {
     listing: ListingContent;
   };
+  // use effect
   useEffect(() => {
     callAPIget('listings/' + HostingId, token)
       .then((response) => {
+        // initial the response data
         const Responsedata = response as ApiResponse;
         console.log(Responsedata.listing);
         setData(Responsedata.listing);
@@ -2071,6 +2264,7 @@ export const EditHosting = () => {
         setSelectedImageString(allimg);
       })
       .catch((error) => {
+        // when meet error
         setOpenSnackbar({
           severity: 'error',
           message: meetError(error),
@@ -2082,10 +2276,14 @@ export const EditHosting = () => {
         return null; // 处理错误，返回一个默认值
       });
   }, []);
+  // when the user click the edit button
   const EditNow = () => {
+    // set the price mode
     const pricePattern = /^[1-9]\d{0,4}$/;
+    // initial the confirm flag
     let Confirmflag = true;
     if (data) {
+      // initial the data
       data.title = String(Title);
       data.price = String(Prise);
       data.title = String(Title);
@@ -2107,6 +2305,7 @@ export const EditHosting = () => {
       data.metadata.otherInfo.WashingMachine = isWashingmachineChecked;
       data.metadata.otherInfo.WiFi = isWifiChecked;
       data.thumbnail = Thumbil;
+      // if the user not select the type
       if (data.metadata.type.length === 0) {
         console.log('no type');
         Confirmflag = false;
@@ -2115,37 +2314,46 @@ export const EditHosting = () => {
         setErrorText1(true);
         scrollToElement(scrollToQ1);
       }
+      // if the user select the address
       if (Confirmflag && data.address) {
+        // set all error text false
         setAllfalse();
         const letterPattern = /[a-zA-Z]+/;
         const numericPattern = /^[0-9]+$/;
         if (!letterPattern.test(Country)) {
+          // if the user not input the country
           console.log('invalid country');
           setErrorContent('Your country name is invalid');
           Confirmflag = false;
         } else if (!letterPattern.test(Street)) {
+          // if the user not input the street
           setErrorContent('Your street name is invalid');
           Confirmflag = false;
           console.log('invalid country');
         } else if (!letterPattern.test(City)) {
+          // if the user not input the city
           setErrorContent('Your city name is invalid');
           Confirmflag = false;
           console.log('invalid country');
         } else if (!letterPattern.test(State)) {
+          // if the user not input the state
           setErrorContent('Your state name is invalid');
           Confirmflag = false;
           console.log('invalid country');
         } else if (!numericPattern.test(Postcode)) {
+          // if the user not input the postcode
           setErrorContent('Your Postcode name is invalid');
           Confirmflag = false;
           console.log('invalid postcode');
         }
         if (!Confirmflag) {
+          // if the confirm flag is false
           setErrorText2(true);
           console.log(scrollToQ2);
           scrollToElement(scrollToQ2);
         }
       }
+      // if the title is empty
       if (Confirmflag && data.title.length === 0) {
         console.log('no title');
         setAllfalse();
@@ -2154,6 +2362,7 @@ export const EditHosting = () => {
         scrollToElement(scrollToQ5);
         Confirmflag = false;
       }
+      // if the price is empty
       if (Confirmflag && !pricePattern.test(data.price)) {
         console.log('invalid Price');
         setAllfalse();
@@ -2162,6 +2371,7 @@ export const EditHosting = () => {
         Confirmflag = false;
         scrollToElement(scrollToQ6);
       }
+      // if the thumbnail is empty
       if (Confirmflag && Thumbil === '') {
         setAllfalse();
         setErrorContent('You must show your hosting pictures to us');
@@ -2169,10 +2379,11 @@ export const EditHosting = () => {
         Confirmflag = false;
         scrollToElement(scrollToQ7);
       }
+      // if the confirm flag is true
       if (Confirmflag) {
+        // set the image string
         data.metadata.images = AllImaegsString;
         setOpen(true);
-        console.log(data);
       }
       console.log(data);
     }
@@ -2498,7 +2709,7 @@ export const EditHosting = () => {
     </CreatChannelOverall>
   );
 };
-
+// css part
 const HostCenterSmall = styled('div')({
   display: 'flex',
   flexDirection: 'column',
@@ -2538,28 +2749,38 @@ const HostSmallCenterHeaderBtn = styled('button')({
   border: '1px solid rgb(0, 0, 0)',
   borderRadius: '7px',
 });
+// css part
+// the SmallHostPage
 export const SmallHostPage = () => {
   const navigate = useNavigate();
+  // the state of the small host page
   const [isOpen, setOpen] = useState(false);
+  // close the model
   const close = () => {
     setOpen(false);
   };
+  // the ref of the model
   const TargetMenu = useRef<HTMLDivElement | null>(null);
+  // when the profile button is clicked
   const ClickProfile = () => {
     setOpen(!isOpen);
   };
+  // when the listing button is clicked
   const ClickCreatListing = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/CreateListing`);
   };
+  // when the home button is clicked
   const goseHome = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}`);
   };
+  // when the host button is clicked
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myhosting`);
   };
+  // when the reservation button is clicked
   const goesReservation = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myresveration`);
@@ -2614,6 +2835,7 @@ export const SmallHostPage = () => {
     </SmallHomePagecss>
   );
 };
+// css part
 const LargeHostOverall = styled('div')({
   width: '100%',
   height: '100%',
@@ -2683,44 +2905,47 @@ const CenterHeaderHostLargeTxt = styled('p')({
   letterSpacing: '0.2px',
   fontWeight: '500',
 });
+// css part
 export const LargeHostPage = () => {
   const { '*': lastSegment } = useParams();
   const navigate = useNavigate();
+  // set the state of the profile button
   const [isOpen, setOpen] = useState(false);
+  // close the profile button
   const close = () => {
     setOpen(false);
   };
+  // set the ref of the profile button
   const TargetMenu = useRef<HTMLDivElement | null>(null);
+  // set the state of the tab
   const [activeTab, setActiveTab] = useState(lastSegment);
+  // when the profile button is clicked
   const ClickProfile = () => {
     setOpen(!isOpen);
   };
+  // when the listing button is clicked
   const ClickCreatListing = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/CreateListing`);
   };
-  // const ClickOther = (event: React.MouseEvent) => {
-  //   if (
-  //     TargetMenu.current &&
-  //     !TargetMenu.current.contains(event.target as Node)
-  //   ) {
-  //     setOpen(false);
-  //   }
-  // };
+  // when the home button is clicked
   const goseHome = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}`);
   };
+  // when the hosting button is clicked
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myhosting`);
     setActiveTab('myhosting');
   };
+  // when the reserving button is clicked
   const goesReservation = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myresveration`);
     setActiveTab('myreserving');
   };
+  // css part
   const SwitchReser = styled('div')({
     display: 'flex',
     alignItems: 'center',
@@ -2740,6 +2965,7 @@ export const LargeHostPage = () => {
       backgroundColor: 'rgb(240, 240, 240)',
     }),
   });
+  // css part
   const SwitchHos = styled('div')({
     display: 'flex',
     alignItems: 'center',
@@ -2808,40 +3034,3 @@ export const LargeHostPage = () => {
     </LargeHostOverall>
   );
 };
-
-// const AddImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-//   const files = event.target.files;
-//   if (files && files.length > 0) {
-//     const reader = new FileReader();
-//     reader.onload = (event: ProgressEvent<FileReader>) => {
-//       let flag = false;
-//       if (event.target) {
-//         const base64Data = event.target.result as string;
-//         if (base64Data) {
-//           flag = isValidBase64Image(base64Data);
-//         }
-//       }
-//       if (flag) {
-//         setAllfalse();
-//         const fileList = Array.from(files);
-//         // 更新已选文件数组
-//         setSelectedImage([...AllImages, ...fileList]);
-//       } else {
-//         setAllfalse();
-//         setErrorContent('Not a valid image!');
-//         setErrorText7(true);
-//         setSelectedImage([...AllImages]);
-//       }
-//     };
-//     reader.onerror = (event: ProgressEvent<FileReader>) => {
-//       if (event.target) {
-//         console.error('Error reading file:', event.target.error);
-//       }
-//     };
-
-//     // 请确保 `files[0]` 存在，否则会导致问题
-//     if (files[0]) {
-//       reader.readAsDataURL(files[0]);
-//     }
-//   }
-// };

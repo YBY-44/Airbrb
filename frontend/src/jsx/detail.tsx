@@ -48,6 +48,8 @@ import {
 import { CallAPIPostWithToken, callAPIget, GetDistance } from './API';
 import { styled } from '@mui/material';
 import { Availability } from './publish';
+import { GetAllOwnerBookingListing } from './get_all_listing';
+// interface part
 interface Review {
   score: number;
   content: string;
@@ -96,6 +98,17 @@ interface ListingContent {
 type ApiResponse = {
   listing: ListingContent;
 };
+// interface for the confirm
+interface ConfirmBookProps {
+  data: ListingContent;
+  isOpen: boolean;
+  close: () => void;
+}
+interface booking {
+  dateRange: Availability;
+  totalPrice: number;
+}
+// interface part end
 // ----------------------------------------------css
 const BackHome = styled('button')({
   backgroundColor: 'white',
@@ -117,13 +130,12 @@ const SmallTitle = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
   width: '100%',
-  maxWidth: '1300px',
   padding: '20px 10px 0px 30px',
   fontSize: '27px',
   margin: '0px 0px 10px 0px',
-  justifyContent: 'left',
-  display: 'flex',
-  letterSpacing: '0px',
+  textOverflow: 'ellipsis',
+  overflowX: 'hidden',
+  minHeight: '70px',
   fontWeight: '500',
 });
 const SmallType = styled('p')({
@@ -399,655 +411,6 @@ const CfmHead = styled('p')({
   letterSpacing: '0.2px',
   color: 'rgb(48, 48, 48)',
 });
-// ---------------------------------------------css
-// interface for the confirm
-interface ConfirmBookProps {
-  data: ListingContent;
-  isOpen: boolean;
-  close: () => void;
-}
-// this function is the confirmation of the confirm booking.
-export const ConfirmBook: React.FC<ConfirmBookProps> = ({
-  data,
-  isOpen,
-  close,
-}) => {
-  const [ConfirmState, setConfirmState] = useState(false);
-  const navigate = useNavigate();
-  const { HostingId } = useParams();
-  const goesMain = () => {
-    navigate('/user/' + data.Booker);
-  };
-  interface booking {
-    dateRange: Availability;
-    totalPrice: number;
-  }
-  const ErrorValue = useContext(ErrorContext);
-  if (!ErrorValue) {
-    // Handle the case where contextValue is null (optional)
-    return null;
-  }
-  const { setOpenSnackbar } = ErrorValue;
-
-  const ReverseBook = () => {
-    if (data.CheckinDate && data.CheckoutDate) {
-      const distance = GetDistance(data.CheckinDate, data.CheckoutDate);
-      const datas: booking = {
-        dateRange: {
-          startDate: data.CheckinDate,
-          endDate: data.CheckoutDate,
-          distance,
-        },
-        totalPrice: distance * Number(data.price),
-      };
-      const token = localStorage.getItem('token') || '';
-      CallAPIPostWithToken('bookings/new/' + HostingId, datas, token)
-        .then(() => {
-          console.log('Booking Successful');
-          setOpenSnackbar({
-            severity: 'success',
-            message:
-              'We have sent your booking to the host and you can check the status of your booking by visiting the homepage.',
-          });
-          setOpenSnackbar({
-            severity: 'success',
-            message: '',
-          });
-          setConfirmState(true);
-        })
-        .catch((error) => {
-          setOpenSnackbar({
-            severity: 'error',
-            message: meetError(error),
-          });
-          setOpenSnackbar({
-            severity: 'error',
-            message: '',
-          });
-        });
-    }
-  };
-
-  let conponment = <div></div>;
-  if (isOpen) {
-    const address =
-      data.address.Street +
-      ', ' +
-      data.address.City +
-      ', ' +
-      data.address.State +
-      ', ' +
-      data.address.Country +
-      ', ' +
-      data.address.Postcode;
-    const items: {
-      [key: string]: boolean;
-    } = {
-      WiFi: data.metadata.otherInfo.WiFi,
-      TV: data.metadata.otherInfo.TV,
-      Kitchen: data.metadata.otherInfo.Kitchen,
-      WashingMachine: data.metadata.otherInfo.WashingMachine,
-      AirConditioning: data.metadata.otherInfo.AirConditioning,
-      FreeParking: data.metadata.otherInfo.FreeParking,
-    };
-    const trueKeys = Object.keys(items).filter((key) => {
-      return items[key] === true;
-    });
-    if (trueKeys.length === 0) {
-      trueKeys.push('No additional Facilities');
-    }
-    conponment = (
-      <CfmAll>
-        <CfmBack></CfmBack>
-        <CfmContent>
-          <CfmHeight>
-            <CfmClose onClick={close}>
-              {ConfirmState ? 'Back' : 'Cancel'}
-            </CfmClose>
-            <CfmHead>Hosting Paying</CfmHead>
-          </CfmHeight>
-          <CfmCenterContent>
-            <CfmRow>
-              <CfmBigtxt>{data.metadata.type}</CfmBigtxt>
-              <CfmRightttxt>{'Hosted by ' + data.owner}</CfmRightttxt>
-            </CfmRow>
-            <CfmRowCol>
-              <CfmLefttxt>Hosting Address</CfmLefttxt>
-              <CfmRightttxt>{address}</CfmRightttxt>
-            </CfmRowCol>
-            <CfmRowCol>
-              <CfmLefttxt>Facilities</CfmLefttxt>
-              <CfmGuest>
-                <CfmGuestBlock>
-                  <LogoPath src='/img/Guest.png'></LogoPath>
-                  <CfmValuettxt>{data.metadata.bedInfo.Guests}</CfmValuettxt>
-                </CfmGuestBlock>
-                <CfmGuestBlock>
-                  <LogoPath src='/img/bath.png'></LogoPath>
-                  <CfmValuettxt>{data.metadata.bedInfo.Bathrooms}</CfmValuettxt>
-                </CfmGuestBlock>
-                <CfmGuestBlock>
-                  <LogoPath src='/img/bedroom.png'></LogoPath>
-                  <CfmValuettxt>{data.metadata.bedInfo.Bedrooms}</CfmValuettxt>
-                </CfmGuestBlock>
-                <CfmGuestBlock>
-                  <LogoPath src='/img/bed.png'></LogoPath>
-                  <CfmValuettxt>{data.metadata.bedInfo.Beds}</CfmValuettxt>
-                </CfmGuestBlock>
-              </CfmGuest>
-              <CfmFac>
-                {trueKeys.map((key) => (
-                  <CfmValuettxt key={key}>{key}</CfmValuettxt>
-                ))}
-              </CfmFac>
-            </CfmRowCol>
-            <CfmRowCol>
-              <CfmLefttxt>Hosting Date</CfmLefttxt>
-              <CfmRow2>
-                <CfmRightttxt2>
-                  {dayjs(data.CheckinDate).format('MM/DD/YYYY') +
-                    ' - ' +
-                    dayjs(data.CheckoutDate).format('MM/DD/YYYY')}
-                </CfmRightttxt2>
-                <CfmRightttxt2>
-                  {GetDistance(data.CheckinDate, data.CheckoutDate) + ' night'}
-                </CfmRightttxt2>
-              </CfmRow2>
-            </CfmRowCol>
-            <CfmRowP>
-              <CfmLefttxt>Total Price</CfmLefttxt>
-              <CfmRightttxt>${String(data.TotalPrice.toFixed(2))}</CfmRightttxt>
-            </CfmRowP>
-          </CfmCenterContent>
-          <CfmBottom>
-            <ReserveConfirm
-              onClick={() => {
-                if (ConfirmState) {
-                  goesMain();
-                } else {
-                  ReverseBook();
-                }
-              }}
-            >
-              {ConfirmState
-                ? 'Goes to HomePage'
-                : 'Pay for $' + String(data.TotalPrice.toFixed(2)) + ' AUD'}
-            </ReserveConfirm>
-          </CfmBottom>
-        </CfmContent>
-      </CfmAll>
-    );
-    console.log(data);
-  }
-  return isOpen ? conponment : null;
-};
-
-export const ListingDetailSmall = () => {
-  const [allimg, setallimg] = useState(false);
-  const FilterValue = useContext(AppContext);
-  if (!FilterValue) {
-    // Handle the case where contextValue is null (optional)
-    return null;
-  }
-  const { Checkin, Checkout } = FilterValue;
-  const [OrderCheckin, SetorderCheckin] = useState<Date | null>(Checkin);
-  const [OrderCheckout, SetorderCheckout] = useState<Date | null>(Checkout);
-  const [scrollFlag, setScrollFlag] = useState(false);
-  const [inDistance, SetinDistance] = useState<number>(
-    GetDistance(Checkin, Checkout)
-  );
-  const [data, setData] = useState<ListingContent>({
-    score: 0,
-    title: '',
-    owner: '',
-    address: {
-      City: '',
-      Country: '',
-      Postcode: '',
-      State: '',
-      Street: '',
-    },
-    availability: [],
-    postedOn: new Date(Date.now()),
-    price: '',
-    thumbnail: '',
-    metadata: {
-      type: '',
-      bedInfo: {
-        Guests: '',
-        Bedrooms: '',
-        Beds: '',
-        Bathrooms: '',
-      },
-      otherInfo: {
-        WiFi: false,
-        TV: false,
-        Kitchen: false,
-        WashingMachine: false,
-        AirConditioning: false,
-        FreeParking: false,
-      },
-      images: [],
-    },
-    reviews: [],
-    CheckinDate: Checkin,
-    CheckoutDate: Checkout,
-    Booker: localStorage.getItem('LoggedUserEmail') || '',
-    TotalPrice: Number(inDistance),
-  });
-  const { HostingId } = useParams();
-  const navigate = useNavigate();
-  const loadData = (dataing: ListingContent) => {
-    setData(dataing);
-  };
-
-  const [vaildReserve, setvalidReserve] = useState(
-    OrderCheckin === null || OrderCheckout === null
-  );
-  const checkDateAvailable = (
-    start: Date | null,
-    end: Date | null,
-    array: Availability[]
-  ) => {
-    console.log(start === end, dayjs(start), dayjs(end));
-
-    if (!(start && end)) {
-      return 1;
-    }
-    if (dayjs(start).isSame(dayjs(end))) {
-      return 2;
-    }
-    if (
-      array.some((item) => {
-        return (
-          dayjs(item.startDate) <= dayjs(start) &&
-          dayjs(end) <= dayjs(item.endDate)
-        );
-      })
-    ) {
-      setvalidReserve(false);
-      return 0;
-    }
-    return 3;
-  };
-  const [errorContent, seterrorContent] = useState(
-    OrderCheckin && OrderCheckout ? '' : 'Both date are required'
-  );
-  const convertButtonState = (
-    dateStart: Date | null,
-    dateEnd: Date | null,
-    array: Availability[]
-  ) => {
-    const state = checkDateAvailable(dateStart, dateEnd, array);
-    switch (state) {
-      case 1:
-        seterrorContent('Both date are required');
-        setvalidReserve(true);
-        break;
-      case 2:
-        seterrorContent('You must reverse at least one night');
-        setvalidReserve(true);
-        break;
-      case 3:
-        seterrorContent('Those dates are not available');
-        setvalidReserve(true);
-        break;
-      default:
-        seterrorContent('');
-        setvalidReserve(false);
-    }
-  };
-  const handleCheckinChange = (date: Date | null) => {
-    // 在这里处理用户选择"Check in"日期的逻辑
-    SetorderCheckin(date);
-    SetinDistance(GetDistance(date, OrderCheckout));
-    // 如果"Check out"日期已经选择，并且"Check in"日期晚于"Check out"日期，则将"Check in"日期调整为"Check out"日期
-    if (date && OrderCheckout && date > OrderCheckout) {
-      SetorderCheckout(date);
-      SetinDistance(0);
-    } else {
-      convertButtonState(date, OrderCheckout, data.availability);
-    }
-  };
-  const handleCheckoutChange = (date: Date | null) => {
-    // 在这里处理用户选择"Check out"日期的逻辑
-    SetorderCheckout(date);
-    SetinDistance(GetDistance(OrderCheckin, date));
-    // 如果"Check in"日期已经选择，并且"Check out"日期早于"Check in"日期，则将"Check out"日期调整为"Check in"日期
-    if (date && OrderCheckin && date < OrderCheckin) {
-      SetinDistance(0);
-      SetorderCheckin(date);
-    } else {
-      convertButtonState(OrderCheckin, date, data.availability);
-    }
-  };
-  const componentRef = useRef<HTMLDivElement>(null);
-  const [refreshflag, setRefresh] = useState(true);
-  const refresh = () => setRefresh(!refreshflag);
-
-  useEffect(() => {
-    // 检查当前路由是否匹配特定的路径
-    const timeoutId = setTimeout(() => {
-      const ShouldScroll = localStorage.getItem('scroll') === 't';
-      if (ShouldScroll && componentRef.current) {
-        componentRef.current.scrollTop = componentRef.current.scrollHeight;
-      }
-    }, 30);
-    return () => clearTimeout(timeoutId);
-  }, [scrollFlag]); // 在这个数组中列出所有的依赖项
-  const ErrorValue = useContext(ErrorContext);
-  if (!ErrorValue) {
-    // Handle the case where contextValue is null (optional)
-    return null;
-  }
-  const { setOpenSnackbar } = ErrorValue;
-
-  useEffect(() => {
-    callAPIget('listings/' + HostingId, '')
-      .then((response) => {
-        const Responsedata = response as ApiResponse;
-        const Resp = Responsedata.listing;
-        const scor = Responsedata.listing.reviews;
-        if (scor.length > 0) {
-          const sum = scor.reduce(
-            (accumulator, item) => accumulator + item.score,
-            0
-          );
-          const average = sum / scor.length;
-          Resp.score = average;
-        } else {
-          Resp.score = 0;
-        }
-        console.log(Responsedata.listing);
-        loadData(Resp);
-        if (localStorage.getItem('scroll') === 't') {
-          setScrollFlag(!scrollFlag);
-        }
-      })
-      .catch((error) => {
-        setOpenSnackbar({ severity: 'error', message: meetError(error) });
-        setOpenSnackbar({ severity: 'error', message: '' });
-        return null; // 处理错误，返回一个默认值
-      });
-  }, [refreshflag]);
-  const [isOpen, setOpen] = useState(false);
-  const close = () => {
-    setOpen(false);
-  };
-  const ClickProfile = () => {
-    setOpen(!isOpen);
-  };
-  const goesHome = () => {
-    const userId = localStorage.getItem('LoggedUserEmail');
-    console.log(userId);
-    if (localStorage.token) {
-      navigate(`/user/${userId}`);
-    } else {
-      navigate('/');
-    }
-  };
-  const trueKeys = Object.entries(data?.metadata.otherInfo || {})
-    .filter(([key, value]) => key && value === true)
-    .map(([key]) => key);
-
-  if (trueKeys.length === 0) {
-    trueKeys.push('No additional Facilities');
-  }
-  const shouldDisableDateCheckOut = (date: Date) => {
-    // 检查日期是否在 disabledBeforeDate 之前
-    if (OrderCheckin) {
-      return date < OrderCheckin;
-    } else {
-      return false;
-    }
-  };
-  const [isbook, setbook] = useState(false);
-  const closebook = () => {
-    setbook(false);
-  };
-  const Reverse = () => {
-    const token = localStorage.getItem('token') || '';
-    if (token) {
-      if (OrderCheckin && OrderCheckout) {
-        data.CheckinDate = OrderCheckin;
-        data.CheckoutDate = OrderCheckout;
-        data.TotalPrice = inDistance * Number(data.price);
-        setbook(true);
-      }
-    } else {
-      navigate('/login');
-    }
-  };
-  const TargetMenu = useRef<HTMLDivElement | null>(null);
-  const conponment = (
-    <SmallHomePagecss>
-      {allimg && (
-        <AllImage>
-          <Overall></Overall>
-          <ImageList
-            sx={{
-              width: '100%',
-              height: '100%',
-              zIndex: '5',
-              position: 'absolute',
-            }}
-            cols={2}
-            rowHeight={300}
-          >
-            <Backimgsmall
-              src='/img/Back.png'
-              onClick={() => {
-                setallimg(false);
-              }}
-            ></Backimgsmall>
-            {data.metadata.images.map((item) => (
-              <ImageListItem key={item}>
-                <img src={item} alt='image' />
-              </ImageListItem>
-            ))}
-          </ImageList>
-        </AllImage>
-      )}
-      <div ref={TargetMenu}>
-        <Routes>
-          <Route
-            path='/'
-            element={<LoginModelDetail isOpen={isOpen} close={close} />}
-          />
-          <Route
-            path='/logged'
-            element={<LogoutModelHost isOpen={isOpen} close={close} />}
-          />
-          <Route path='*' element={NaN} />
-        </Routes>
-      </div>
-      <Routes>
-        <Route
-          path='/logged/review'
-          element={<AddReview refresh={refresh} />}
-        />
-      </Routes>
-      <div>
-        <ConfirmBook data={data} isOpen={isbook} close={closebook} />
-      </div>
-      <SmallHomeHead>
-        <BackHome onClick={goesHome}>Homes</BackHome>
-        <LargeProfile>
-          <LargeProfileOuter onClick={ClickProfile}>
-            <LargeProfileLeftImage src='/img/more.png'></LargeProfileLeftImage>
-            <Routes>
-              <Route
-                path='/logged'
-                element={
-                  <LargeProfileRightImage src='/img/logged.png'></LargeProfileRightImage>
-                }
-              />
-              <Route
-                path='*'
-                element={
-                  <LargeProfileRightImage src='/img/profile.png'></LargeProfileRightImage>
-                }
-              />
-            </Routes>
-          </LargeProfileOuter>
-        </LargeProfile>
-      </SmallHomeHead>
-      <SpecificCenter ref={componentRef}>
-        <SmallThumbImg
-          src={data?.thumbnail}
-          onClick={() => {
-            setallimg(true);
-          }}
-        ></SmallThumbImg>
-        <SmallTitle>{data?.title}</SmallTitle>
-        <SmallTitle2>
-          {data?.metadata.type +
-            ' stay in ' +
-            data?.address.City +
-            ', ' +
-            data?.address.Country}
-        </SmallTitle2>
-        <SmallTitle3>
-          {data?.metadata.bedInfo.Guests +
-            ' guests · ' +
-            data?.metadata.bedInfo.Bedrooms +
-            ' bedrooms · ' +
-            data?.metadata.bedInfo.Beds +
-            ' beds · ' +
-            data?.metadata.bedInfo.Bathrooms +
-            ' bathrooms'}
-        </SmallTitle3>
-        <SmallFac>
-          <SmallType>What this place offers?</SmallType>
-          <SmallFacp>
-            {trueKeys.map((key) => (
-              <LargeHousea key={key}>{key}</LargeHousea>
-            ))}
-          </SmallFacp>
-          <SmallType>{'Hosted by ' + data?.owner}</SmallType>
-          <SmallTime>
-            {'Published in ' + dayjs(data?.postedOn).format('YYYY-DD-MM')}
-          </SmallTime>
-          <SmallAddress>
-            Full Address:
-            {' ' +
-              data?.address.Street +
-              ', ' +
-              data?.address.City +
-              ', ' +
-              data?.address.State +
-              ', ' +
-              data?.address.Country +
-              ', ' +
-              data?.address.Postcode}
-          </SmallAddress>
-          <LargeReviweInfo>
-            <LargeReviewBlock>
-              <LargeReviewscore>{data?.score.toFixed(2)}</LargeReviewscore>
-              <Rating
-                name='custom-rating'
-                value={data?.score}
-                precision={0.2}
-                size='small'
-                readOnly
-                sx={{ color: 'black' }} // 使用sx属性添加样式
-              />
-            </LargeReviewBlock>
-            <LargeReviewBlock>
-              <LargeReviewtxt>{data?.reviews.length}</LargeReviewtxt>
-              <LargeReviewtxt2>Reviews</LargeReviewtxt2>
-            </LargeReviewBlock>
-          </LargeReviweInfo>
-        </SmallFac>
-        <SmallBook>
-          <SmallTotalPrice>
-            {OrderCheckin && OrderCheckout
-              ? `${(inDistance * Number(data.price)).toFixed(2)} AUD total for`
-              : `${Number(data.price).toFixed(2)} AUD per night`}
-          </SmallTotalPrice>
-          <DateBookSmall>
-            <DateCheckBlockSmall>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer components={['DatePicker', 'DatePicker']}>
-                  <DatePicker
-                    label='Checkin Date'
-                    value={OrderCheckin}
-                    onChange={(date) => {
-                      if (date) handleCheckinChange(date);
-                    }}
-                  />
-                </DemoContainer>
-              </LocalizationProvider>
-            </DateCheckBlockSmall>
-            <DateCheckBlockSmall>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer components={['DatePicker', 'DatePicker']}>
-                  <DatePicker
-                    label='End Date'
-                    value={OrderCheckout}
-                    onChange={(date) => {
-                      if (date) handleCheckoutChange(date);
-                    }}
-                    shouldDisableDate={shouldDisableDateCheckOut}
-                  />
-                </DemoContainer>
-              </LocalizationProvider>
-            </DateCheckBlockSmall>
-          </DateBookSmall>
-          <TimeTipSmall>
-            {data.availability.map((key, index) => (
-              <TimeRowSmall key={index}>
-                <AvailableTime>
-                  {'Available Range ' + (index + 1) + ':'}
-                </AvailableTime>
-                <AvailableTime>
-                  {'From ' +
-                    dayjs(key.startDate).format('MM/DD/YYYY') +
-                    ' to ' +
-                    dayjs(key.endDate).format('MM/DD/YYYY')}
-                </AvailableTime>
-              </TimeRowSmall>
-            ))}
-          </TimeTipSmall>
-          <InvalidDate>{errorContent}</InvalidDate>
-          <CheckPart>
-            <ReserveLarge onClick={Reverse} disabled={vaildReserve}>
-              Reserve
-            </ReserveLarge>
-            <FinalPriceLarge>
-              <FPLL>Total</FPLL>
-              <FPLR>
-                {'$' + (inDistance * Number(data.price)).toFixed(2) + ' AUD'}
-              </FPLR>
-            </FinalPriceLarge>
-          </CheckPart>
-        </SmallBook>
-        <SmallReviewPart>
-          {data.reviews.map((item, index) => (
-            <ReviewEachBlockSmall key={index}>
-              <ReviewHeaderSmall>
-                <ReviewerSmall>{item.owner}</ReviewerSmall>
-                <Rating
-                  name='custom-rating'
-                  value={item.score}
-                  precision={0.5}
-                  size='small'
-                  readOnly
-                  sx={{ color: 'black' }} // 使用sx属性添加样式
-                />
-              </ReviewHeaderSmall>
-              <ReviewContentSmall>{item.content}</ReviewContentSmall>
-              <ReviewDateSmall>
-                {dayjs(item.time).format('MM/DD/YYYY')}
-              </ReviewDateSmall>
-            </ReviewEachBlockSmall>
-          ))}
-        </SmallReviewPart>
-      </SpecificCenter>
-    </SmallHomePagecss>
-  );
-  return conponment;
-};
 const SpecificCenter = styled('div')({
   width: '100%',
   display: 'flex',
@@ -1060,7 +423,7 @@ const SmallThumbImg = styled('img')({
   width: '100%',
   maxHeight: '370px',
   objectFit: 'cover',
-  cursor: 'pointer'
+  cursor: 'pointer',
 });
 const ThumbImg = styled('img')({
   '@media (max-width: 1000px)': {
@@ -1474,14 +837,13 @@ const ReviewHeaderLarge = styled('div')({
   display: 'flex',
   alignItems: 'center',
 });
-
 const LargeAddress = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
   width: '100%',
   maxWidth: '1300px',
   padding: '15px 0px 10px 25px',
-  margin: '0px 0px 30px 0px',
+  margin: '0px 0px 0px 0px',
   fontSize: '16px',
   justifyContent: 'left',
   display: 'flex',
@@ -1515,7 +877,6 @@ const Overall = styled('div')({
   height: '100%',
   backgroundColor: 'white',
 });
-
 const Backimg = styled('img')({
   padding: '50px 90% 55px 100px',
   objectFit: 'contain',
@@ -1539,17 +900,754 @@ const Backimgsmall = styled('img')({
     backgroundColor: 'rgb(240,240,240)',
   },
 });
-export const ListingDetailLarge = () => {
+const LastImg = styled('div')({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontSize: '20px',
+  backgroundColor: 'rgb(240,240,240)',
+});
+// ---------------------------------------------css
+
+// this function is the confirmation of the confirm booking.
+export const ConfirmBook: React.FC<ConfirmBookProps> = ({
+  data,
+  isOpen,
+  close,
+}) => {
+  // inital the confirm state to false
+  const [ConfirmState, setConfirmState] = useState(false);
+  // use the navigate to go to the user page
+  const navigate = useNavigate();
+  // get the hosting id from the url
+  const { HostingId } = useParams();
+  // go to the user page
+  const goesMain = () => {
+    navigate('/user/' + data.Booker);
+  };
+  // go back to detail page
+  const back = () => {
+    setConfirmState(false);
+    close();
+  };
+  // get the error context
+  const ErrorValue = useContext(ErrorContext);
+  // if not error
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  // get the set open snackbar function
+  const { setOpenSnackbar } = ErrorValue;
+  // this function used when the user click the confirm button
+  const ReverseBook = () => {
+    // if both date is not null
+    if (data.CheckinDate && data.CheckoutDate) {
+      // get the distance between two date
+      const distance = GetDistance(data.CheckinDate, data.CheckoutDate);
+      // initial the two date and distance
+      const datas: booking = {
+        dateRange: {
+          startDate: data.CheckinDate,
+          endDate: data.CheckoutDate,
+          distance,
+        },
+        // get the total price
+        totalPrice: distance * Number(data.price),
+      };
+      // get the token from the local storage
+      const token = localStorage.getItem('token') || '';
+      // call the api to create the booking
+      CallAPIPostWithToken('bookings/new/' + HostingId, datas, token)
+        .then((response) => {
+          // get the booking id
+          const bookingId = response as { bookingId: string };
+          console.log(bookingId.bookingId);
+          // refresh the new booking id
+          localStorage.setItem('NewBooking', bookingId.bookingId);
+          // set the open snackbar
+          setOpenSnackbar({
+            severity: 'success',
+            message:
+              'We have sent your booking to the host and you can check the status of your booking by visiting the homepage.',
+          });
+          setOpenSnackbar({
+            severity: 'success',
+            message: '',
+          });
+          // set the confirm state to true
+          setConfirmState(true);
+        })
+        .catch((error) => {
+          if (error === 'info') {
+            // show error message
+            setOpenSnackbar({
+              severity: 'error',
+              message: 'You can not book your own listing.',
+            });
+          } else {
+            // show error message
+            setOpenSnackbar({
+              severity: 'error',
+              message: meetError(error),
+            });
+          }
+          // show error message
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
+        });
+    }
+  };
+  // initial the conponment
+  let conponment = <div></div>;
+  if (isOpen) {
+    // initial the address
+    const address =
+      data.address.Street +
+      ', ' +
+      data.address.City +
+      ', ' +
+      data.address.State +
+      ', ' +
+      data.address.Country +
+      ', ' +
+      data.address.Postcode;
+    // initial all facilities
+    const items: {
+      [key: string]: boolean;
+    } = {
+      WiFi: data.metadata.otherInfo.WiFi,
+      TV: data.metadata.otherInfo.TV,
+      Kitchen: data.metadata.otherInfo.Kitchen,
+      WashingMachine: data.metadata.otherInfo.WashingMachine,
+      AirConditioning: data.metadata.otherInfo.AirConditioning,
+      FreeParking: data.metadata.otherInfo.FreeParking,
+    };
+    // filter all true facilities
+    const trueKeys = Object.keys(items).filter((key) => {
+      return items[key] === true;
+    });
+    // if the facilities is empty then do it
+    if (trueKeys.length === 0) {
+      trueKeys.push('No additional Facilities');
+    }
+    // change the conponment
+    conponment = (
+      <CfmAll>
+        <CfmBack></CfmBack>
+        <CfmContent>
+          <CfmHeight>
+            <CfmClose onClick={back}>
+              {ConfirmState ? 'Back' : 'Cancel'}
+            </CfmClose>
+            <CfmHead>Hosting Paying</CfmHead>
+          </CfmHeight>
+          <CfmCenterContent>
+            <CfmRow>
+              <CfmBigtxt>{data.metadata.type}</CfmBigtxt>
+              <CfmRightttxt>{'Hosted by ' + data.owner}</CfmRightttxt>
+            </CfmRow>
+            <CfmRowCol>
+              <CfmLefttxt>Hosting Address</CfmLefttxt>
+              <CfmRightttxt>{address}</CfmRightttxt>
+            </CfmRowCol>
+            <CfmRowCol>
+              <CfmLefttxt>Facilities</CfmLefttxt>
+              <CfmGuest>
+                <CfmGuestBlock>
+                  <LogoPath src='/img/Guest.png'></LogoPath>
+                  <CfmValuettxt>{data.metadata.bedInfo.Guests}</CfmValuettxt>
+                </CfmGuestBlock>
+                <CfmGuestBlock>
+                  <LogoPath src='/img/bath.png'></LogoPath>
+                  <CfmValuettxt>{data.metadata.bedInfo.Bathrooms}</CfmValuettxt>
+                </CfmGuestBlock>
+                <CfmGuestBlock>
+                  <LogoPath src='/img/bedroom.png'></LogoPath>
+                  <CfmValuettxt>{data.metadata.bedInfo.Bedrooms}</CfmValuettxt>
+                </CfmGuestBlock>
+                <CfmGuestBlock>
+                  <LogoPath src='/img/bed.png'></LogoPath>
+                  <CfmValuettxt>{data.metadata.bedInfo.Beds}</CfmValuettxt>
+                </CfmGuestBlock>
+              </CfmGuest>
+              <CfmFac>
+                {trueKeys.map((key) => (
+                  <CfmValuettxt key={key}>{key}</CfmValuettxt>
+                ))}
+              </CfmFac>
+            </CfmRowCol>
+            <CfmRowCol>
+              <CfmLefttxt>Hosting Date</CfmLefttxt>
+              <CfmRow2>
+                <CfmRightttxt2>
+                  {dayjs(data.CheckinDate).format('MM/DD/YYYY') +
+                    ' - ' +
+                    dayjs(data.CheckoutDate).format('MM/DD/YYYY')}
+                </CfmRightttxt2>
+                <CfmRightttxt2>
+                  {GetDistance(data.CheckinDate, data.CheckoutDate) + ' night'}
+                </CfmRightttxt2>
+              </CfmRow2>
+            </CfmRowCol>
+            <CfmRowP>
+              <CfmLefttxt>Total Price</CfmLefttxt>
+              <CfmRightttxt>${String(data.TotalPrice.toFixed(2))}</CfmRightttxt>
+            </CfmRowP>
+          </CfmCenterContent>
+          <CfmBottom>
+            <ReserveConfirm
+              onClick={() => {
+                if (ConfirmState) {
+                  goesMain();
+                } else {
+                  ReverseBook();
+                }
+              }}
+            >
+              {ConfirmState
+                ? 'Goes to HomePage'
+                : 'Pay for $' + String(data.TotalPrice.toFixed(2)) + ' AUD'}
+            </ReserveConfirm>
+          </CfmBottom>
+        </CfmContent>
+      </CfmAll>
+    );
+    console.log(data);
+  }
+  return isOpen ? conponment : null;
+};
+export const ListingDetailSmall = () => {
+  // initial the allimage page not shown
   const [allimg, setallimg] = useState(false);
-  const [scrollFlag, setScrollFlag] = useState(false);
+  // get all context value
   const FilterValue = useContext(AppContext);
   if (!FilterValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
-  const { searchcontent, setcontent, Checkin, Checkout } = FilterValue;
+  const { Checkin, Checkout } = FilterValue;
+  // initial the checkin and checkout value
   const [OrderCheckin, SetorderCheckin] = useState<Date | null>(Checkin);
   const [OrderCheckout, SetorderCheckout] = useState<Date | null>(Checkout);
+  // set the scroll flag initial to false
+  const [scrollFlag, setScrollFlag] = useState(false);
+  // initial the distance of booking
+  const [inDistance, SetinDistance] = useState<number>(
+    GetDistance(Checkin, Checkout)
+  );
+  // initial the booking data
+  const [data, setData] = useState<ListingContent>({
+    score: 0,
+    title: '',
+    owner: '',
+    address: {
+      City: '',
+      Country: '',
+      Postcode: '',
+      State: '',
+      Street: '',
+    },
+    availability: [],
+    postedOn: new Date(Date.now()),
+    price: '',
+    thumbnail: '',
+    metadata: {
+      type: '',
+      bedInfo: {
+        Guests: '',
+        Bedrooms: '',
+        Beds: '',
+        Bathrooms: '',
+      },
+      otherInfo: {
+        WiFi: false,
+        TV: false,
+        Kitchen: false,
+        WashingMachine: false,
+        AirConditioning: false,
+        FreeParking: false,
+      },
+      images: [],
+    },
+    reviews: [],
+    CheckinDate: Checkin,
+    CheckoutDate: Checkout,
+    Booker: localStorage.getItem('LoggedUserEmail') || '',
+    TotalPrice: Number(inDistance),
+  });
+  // get the hosting id
+  const { HostingId } = useParams();
+  // use the navigate function
+  const navigate = useNavigate();
+  // load the data
+  const loadData = (dataing: ListingContent) => {
+    setData(dataing);
+  };
+  // check a reserve is valid
+  const [vaildReserve, setvalidReserve] = useState(
+    OrderCheckin === null || OrderCheckout === null
+  );
+  // check the different error of booking choose
+  const checkDateAvailable = (
+    start: Date | null,
+    end: Date | null,
+    array: Availability[]
+  ) => {
+    console.log(start === end, dayjs(start), dayjs(end));
+
+    if (!(start && end)) {
+      return 1;
+    }
+    if (dayjs(start).isSame(dayjs(end))) {
+      return 2;
+    }
+    if (
+      array.some((item) => {
+        return (
+          dayjs(item.startDate) <= dayjs(start) &&
+          dayjs(end) <= dayjs(item.endDate)
+        );
+      })
+    ) {
+      setvalidReserve(false);
+      return 0;
+    }
+    return 3;
+  };
+  // initial the error content
+  const [errorContent, seterrorContent] = useState(
+    OrderCheckin && OrderCheckout ? '' : 'Both date are required'
+  );
+  // convert the button style for the user
+  const convertButtonState = (
+    dateStart: Date | null,
+    dateEnd: Date | null,
+    array: Availability[]
+  ) => {
+    const state = checkDateAvailable(dateStart, dateEnd, array);
+    switch (state) {
+      case 1:
+        seterrorContent('Both date are required');
+        setvalidReserve(true);
+        break;
+      case 2:
+        seterrorContent('You must reverse at least one night');
+        setvalidReserve(true);
+        break;
+      case 3:
+        seterrorContent('Those dates are not available');
+        setvalidReserve(true);
+        break;
+      default:
+        seterrorContent('');
+        setvalidReserve(false);
+    }
+  };
+  const handleCheckinChange = (date: Date | null) => {
+    // change the checkin date
+    SetorderCheckin(date);
+    // chang the distance
+    SetinDistance(GetDistance(date, OrderCheckout));
+    // if the checkin date is later than checkout date, then change the checkout date
+    if (date && OrderCheckout && date > OrderCheckout) {
+      SetorderCheckout(date);
+      SetinDistance(0);
+    } else {
+      // accoring to the checkin date and checkout date to change the button style
+      convertButtonState(date, OrderCheckout, data.availability);
+    }
+  };
+  // change the checkout date
+  const handleCheckoutChange = (date: Date | null) => {
+    SetorderCheckout(date);
+    SetinDistance(GetDistance(OrderCheckin, date));
+    // if the checkout date is earlier than checkin date, then change the checkin date
+    if (date && OrderCheckin && date < OrderCheckin) {
+      SetinDistance(0);
+      SetorderCheckin(date);
+    } else {
+      // accoring to the checkin date and checkout date to change the button style
+      convertButtonState(OrderCheckin, date, data.availability);
+    }
+  };
+  // initial the component ref
+  const componentRef = useRef<HTMLDivElement>(null);
+  // initial the refresh flag
+  const [refreshflag, setRefresh] = useState(true);
+  // refresh the page
+  const refresh = () => setRefresh(!refreshflag);
+  // initial the use Effect
+  useEffect(() => {
+    // check the current route is match the specific path
+    const timeoutId = setTimeout(() => {
+      // judge whether the scroll flag is true
+      const ShouldScroll = localStorage.getItem('scroll') === 't';
+      // then scroll to the bottom
+      if (ShouldScroll && componentRef.current) {
+        componentRef.current.scrollTop = componentRef.current.scrollHeight;
+      }
+    }, 30);
+    // clear the timeout
+    return () => clearTimeout(timeoutId);
+  }, [scrollFlag]);
+  // initial the error context
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  // get the error context
+  const { setOpenSnackbar } = ErrorValue;
+  // accoring to the hosting id to get the data
+  useEffect(() => {
+    callAPIget('listings/' + HostingId, '')
+      .then((response) => {
+        // get the response data
+        const Responsedata = response as ApiResponse;
+        // get the score and Resp
+        const Resp = Responsedata.listing;
+        const scor = Responsedata.listing.reviews;
+        // calculate the average score
+        if (scor.length > 0) {
+          const sum = scor.reduce(
+            (accumulator, item) => accumulator + item.score,
+            0
+          );
+          const average = sum / scor.length;
+          Resp.score = average;
+        } else {
+          Resp.score = 0;
+        }
+        // load all the data
+        console.log(Responsedata.listing);
+        loadData(Resp);
+        // according to the scroll flag to set the scroll flag
+        if (localStorage.getItem('scroll') === 't') {
+          setScrollFlag(!scrollFlag);
+        }
+      })
+      .catch((error) => {
+        // when meet error then show the error message
+        setOpenSnackbar({ severity: 'error', message: meetError(error) });
+        setOpenSnackbar({ severity: 'error', message: '' });
+        // return the null value
+        return null;
+      });
+  }, [refreshflag]);
+  // set isOpen to false initially
+  const [isOpen, setOpen] = useState(false);
+  // close the profile
+  const close = () => {
+    setOpen(false);
+  };
+  // open the profile
+  const ClickProfile = () => {
+    setOpen(!isOpen);
+  };
+  // go back to the home page
+  const goesHome = () => {
+    const userId = localStorage.getItem('LoggedUserEmail');
+    console.log(userId);
+    if (localStorage.token) {
+      navigate(`/user/${userId}`);
+    } else {
+      navigate('/');
+    }
+  };
+  // filter all the true value
+  const trueKeys = Object.entries(data?.metadata.otherInfo || {})
+    .filter(([key, value]) => key && value === true)
+    .map(([key]) => key);
+  // if the trueKeys is empty then push the no additional facilities
+  if (trueKeys.length === 0) {
+    trueKeys.push('No additional Facilities');
+  }
+  // check whether the date is satisfy a rang
+  const shouldDisableDateCheckOut = (date: Date) => {
+    // check whether the date is before the checkin date
+    if (OrderCheckin) {
+      return date < OrderCheckin;
+    } else {
+      return false;
+    }
+  };
+  // initial the book flag
+  const [isbook, setbook] = useState(false);
+  // close the book
+  const closebook = () => {
+    setbook(false);
+  };
+  // reverse the order
+  const Reverse = () => {
+    // get the token
+    const token = localStorage.getItem('token') || '';
+    if (token) {
+      // if both checkin date and checkout date are not null
+      if (OrderCheckin && OrderCheckout) {
+        data.CheckinDate = OrderCheckin;
+        data.CheckoutDate = OrderCheckout;
+        data.TotalPrice = inDistance * Number(data.price);
+        // set the book flag to true
+        setbook(true);
+      }
+    } else {
+      navigate('/login');
+    }
+  };
+  // link the ref
+  const TargetMenu = useRef<HTMLDivElement | null>(null);
+  // set the returned conponment
+  const conponment = (
+    <SmallHomePagecss>
+      {allimg && (
+        <AllImage>
+          <Overall></Overall>
+          <ImageList
+            sx={{
+              width: '100%',
+              height: '100%',
+              zIndex: '5',
+              position: 'absolute',
+            }}
+            cols={2}
+            rowHeight={300}
+          >
+            <Backimgsmall
+              src='/img/Back.png'
+              onClick={() => {
+                setallimg(false);
+              }}
+            ></Backimgsmall>
+            {data.metadata.images.map((item) => (
+              <ImageListItem key={item}>
+                <img src={item} alt='image' />
+              </ImageListItem>
+            ))}
+            <LastImg>No more images</LastImg>
+          </ImageList>
+        </AllImage>
+      )}
+      <div ref={TargetMenu}>
+        <Routes>
+          <Route
+            path='/'
+            element={<LoginModelDetail isOpen={isOpen} close={close} />}
+          />
+          <Route
+            path='/logged'
+            element={<LogoutModelHost isOpen={isOpen} close={close} />}
+          />
+          <Route path='*' element={NaN} />
+        </Routes>
+      </div>
+      <Routes>
+        <Route
+          path='/logged/review'
+          element={<AddReview refresh={refresh} />}
+        />
+      </Routes>
+      <div>
+        <ConfirmBook data={data} isOpen={isbook} close={closebook} />
+      </div>
+      <SmallHomeHead>
+        <BackHome onClick={goesHome}>Homes</BackHome>
+        <LargeProfile>
+          <LargeProfileOuter onClick={ClickProfile}>
+            <LargeProfileLeftImage src='/img/more.png'></LargeProfileLeftImage>
+            <Routes>
+              <Route
+                path='/logged'
+                element={
+                  <LargeProfileRightImage src='/img/logged.png'></LargeProfileRightImage>
+                }
+              />
+              <Route
+                path='*'
+                element={
+                  <LargeProfileRightImage src='/img/profile.png'></LargeProfileRightImage>
+                }
+              />
+            </Routes>
+          </LargeProfileOuter>
+        </LargeProfile>
+      </SmallHomeHead>
+      <SpecificCenter ref={componentRef}>
+        <SmallThumbImg
+          src={data?.thumbnail}
+          onClick={() => {
+            setallimg(true);
+          }}
+        ></SmallThumbImg>
+        <SmallTitle>{data?.title}</SmallTitle>
+        <SmallTitle2>
+          {data?.metadata.type +
+            ' stay in ' +
+            data?.address.City +
+            ', ' +
+            data?.address.Country}
+        </SmallTitle2>
+        <SmallTitle3>
+          {data?.metadata.bedInfo.Guests +
+            ' guests · ' +
+            data?.metadata.bedInfo.Bedrooms +
+            ' bedrooms · ' +
+            data?.metadata.bedInfo.Beds +
+            ' beds · ' +
+            data?.metadata.bedInfo.Bathrooms +
+            ' bathrooms'}
+        </SmallTitle3>
+        <SmallFac>
+          <SmallType>What this place offers?</SmallType>
+          <SmallFacp>
+            {trueKeys.map((key) => (
+              <LargeHousea key={key}>{key}</LargeHousea>
+            ))}
+          </SmallFacp>
+          <SmallType>{'Hosted by ' + data?.owner}</SmallType>
+          <SmallTime>
+            {'Published in ' + dayjs(data?.postedOn).format('YYYY-DD-MM')}
+          </SmallTime>
+          <SmallAddress>
+            Full Address:
+            {' ' +
+              data?.address.Street +
+              ', ' +
+              data?.address.City +
+              ', ' +
+              data?.address.State +
+              ', ' +
+              data?.address.Country +
+              ', ' +
+              data?.address.Postcode}
+          </SmallAddress>
+          <GetAllOwnerBookingListing />
+          <LargeReviweInfo>
+            <LargeReviewBlock>
+              <LargeReviewscore>{data?.score.toFixed(2)}</LargeReviewscore>
+              <Rating
+                name='custom-rating'
+                value={data?.score}
+                precision={0.2}
+                size='small'
+                readOnly
+                sx={{ color: 'black' }} // 使用sx属性添加样式
+              />
+            </LargeReviewBlock>
+            <LargeReviewBlock>
+              <LargeReviewtxt>{data?.reviews.length}</LargeReviewtxt>
+              <LargeReviewtxt2>Reviews</LargeReviewtxt2>
+            </LargeReviewBlock>
+          </LargeReviweInfo>
+        </SmallFac>
+        <SmallBook>
+          <SmallTotalPrice>
+            {OrderCheckin && OrderCheckout
+              ? `${(inDistance * Number(data.price)).toFixed(2)} AUD total for`
+              : `${Number(data.price).toFixed(2)} AUD per night`}
+          </SmallTotalPrice>
+          <DateBookSmall>
+            <DateCheckBlockSmall>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DemoContainer components={['DatePicker', 'DatePicker']}>
+                  <DatePicker
+                    label='Checkin Date'
+                    value={OrderCheckin}
+                    onChange={(date) => {
+                      if (date) handleCheckinChange(date);
+                    }}
+                  />
+                </DemoContainer>
+              </LocalizationProvider>
+            </DateCheckBlockSmall>
+            <DateCheckBlockSmall>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DemoContainer components={['DatePicker', 'DatePicker']}>
+                  <DatePicker
+                    label='End Date'
+                    value={OrderCheckout}
+                    onChange={(date) => {
+                      if (date) handleCheckoutChange(date);
+                    }}
+                    shouldDisableDate={shouldDisableDateCheckOut}
+                  />
+                </DemoContainer>
+              </LocalizationProvider>
+            </DateCheckBlockSmall>
+          </DateBookSmall>
+          <TimeTipSmall>
+            {data.availability.map((key, index) => (
+              <TimeRowSmall key={index}>
+                <AvailableTime>
+                  {'Available Range ' + (index + 1) + ':'}
+                </AvailableTime>
+                <AvailableTime>
+                  {'From ' +
+                    dayjs(key.startDate).format('MM/DD/YYYY') +
+                    ' to ' +
+                    dayjs(key.endDate).format('MM/DD/YYYY')}
+                </AvailableTime>
+              </TimeRowSmall>
+            ))}
+          </TimeTipSmall>
+          <InvalidDate>{errorContent}</InvalidDate>
+          <CheckPart>
+            <ReserveLarge onClick={Reverse} disabled={vaildReserve}>
+              Reserve
+            </ReserveLarge>
+            <FinalPriceLarge>
+              <FPLL>Total</FPLL>
+              <FPLR>
+                {'$' + (inDistance * Number(data.price)).toFixed(2) + ' AUD'}
+              </FPLR>
+            </FinalPriceLarge>
+          </CheckPart>
+        </SmallBook>
+        <SmallReviewPart>
+          {data.reviews.map((item, index) => (
+            <ReviewEachBlockSmall key={index}>
+              <ReviewHeaderSmall>
+                <ReviewerSmall>{item.owner}</ReviewerSmall>
+                <Rating
+                  name='custom-rating'
+                  value={item.score}
+                  precision={0.5}
+                  size='small'
+                  readOnly
+                  sx={{ color: 'black' }} // 使用sx属性添加样式
+                />
+              </ReviewHeaderSmall>
+              <ReviewContentSmall>{item.content}</ReviewContentSmall>
+              <ReviewDateSmall>
+                {dayjs(item.time).format('MM/DD/YYYY')}
+              </ReviewDateSmall>
+            </ReviewEachBlockSmall>
+          ))}
+        </SmallReviewPart>
+      </SpecificCenter>
+    </SmallHomePagecss>
+  );
+  return conponment;
+};
+export const ListingDetailLarge = () => {
+  // initial the allimg flag
+  const [allimg, setallimg] = useState(false);
+  // initial the scroll flag
+  const [scrollFlag, setScrollFlag] = useState(false);
+  // get the app context
+  const FilterValue = useContext(AppContext);
+  if (!FilterValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  // initial the search info and other info
+  const { searchcontent, setcontent, Checkin, Checkout } = FilterValue;
+  // initial the order checkin and checkout
+  const [OrderCheckin, SetorderCheckin] = useState<Date | null>(Checkin);
+  const [OrderCheckout, SetorderCheckout] = useState<Date | null>(Checkout);
+  // initial the data for submit
   const [data, setData] = useState<ListingContent>({
     score: 0,
     title: '',
@@ -1589,33 +1687,46 @@ export const ListingDetailLarge = () => {
     Booker: localStorage.getItem('LoggedUserEmail') || '',
     TotalPrice: 0,
   });
+  // get the params
   const { HostingId } = useParams();
+  // use the navigate
   const navigate = useNavigate();
+  // change the data
   const loadData = (dataing: ListingContent) => {
     setData(dataing);
   };
+  // change the search content
   const handdlesearch = (event: ChangeEvent<HTMLInputElement>) => {
     setcontent(event.target.value);
   };
+  // change the checkin date and checkout date are valid
   const [vaildReserve, setvalidReserve] = useState(
     OrderCheckin === null || OrderCheckout === null
   );
+  // change the date distance
   const [inDistance, SetinDistance] = useState<number>(
     GetDistance(Checkin, Checkout)
   );
+  // check the date available range
   const checkDateAvailable = (
     start: Date | null,
     end: Date | null,
     array: Availability[]
   ) => {
+    // log the date
     console.log(start === end, dayjs(start), dayjs(end));
-
+    // if exist null
     if (!(start && end)) {
+      // error 1
       return 1;
     }
+    // if two date are same
     if (dayjs(start).isSame(dayjs(end))) {
+      // error 2
       return 2;
     }
+    // if the date is not available
+    // error 3
     if (
       array.some((item) => {
         return (
@@ -1624,29 +1735,37 @@ export const ListingDetailLarge = () => {
         );
       })
     ) {
+      // set the valid reserve
       setvalidReserve(false);
       return 0;
     }
+    // error 3
     return 3;
   };
+  // change the error content
   const [errorContent, seterrorContent] = useState(
     OrderCheckin && OrderCheckout ? '' : 'Both date are required'
   );
+  // convert the button state
   const convertButtonState = (
     dateStart: Date | null,
     dateEnd: Date | null,
     array: Availability[]
   ) => {
+    // if the error exist then the button is disable
     const state = checkDateAvailable(dateStart, dateEnd, array);
     switch (state) {
+      // error 1
       case 1:
         seterrorContent('Both date are required');
         setvalidReserve(true);
         break;
+      // error 2
       case 2:
         seterrorContent('You must reverse at least one night');
         setvalidReserve(true);
         break;
+      // error 3
       case 3:
         seterrorContent('Those dates are not available');
         setvalidReserve(true);
@@ -1657,75 +1776,97 @@ export const ListingDetailLarge = () => {
     }
   };
   const handleCheckinChange = (date: Date | null) => {
-    // 在这里处理用户选择"Check in"日期的逻辑
+    // set the order checkin and distance
     SetorderCheckin(date);
     SetinDistance(GetDistance(date, OrderCheckout));
-    // 如果"Check out"日期已经选择，并且"Check in"日期晚于"Check out"日期，则将"Check in"日期调整为"Check out"日期
+    // if the checkin date is later than checkout date
     if (date && OrderCheckout && date > OrderCheckout) {
+      // set the order checkout and distance
       SetorderCheckout(date);
       SetinDistance(0);
     } else {
+      // convert the button state
       convertButtonState(date, OrderCheckout, data.availability);
     }
   };
-
+  // when the checkout date change
   const handleCheckoutChange = (date: Date | null) => {
-    // 在这里处理用户选择"Check out"日期的逻辑
+    // set the order checkout and distance
     SetorderCheckout(date);
     SetinDistance(GetDistance(OrderCheckin, date));
-    // 如果"Check in"日期已经选择，并且"Check out"日期早于"Check in"日期，则将"Check out"日期调整为"Check in"日期
+    // if the checkin date is exist and checkout date is earlier than checkin date
     if (date && OrderCheckin && date < OrderCheckin) {
+      // set the order checkin and distance
       SetinDistance(0);
       SetorderCheckin(date);
     } else {
+      // convert the button state
       convertButtonState(OrderCheckin, date, data.availability);
     }
   };
+  // set the refresh flag to control the refresh
   const [refreshflag, setRefresh] = useState(true);
+  // refresh the data
   const refresh = () => setRefresh(!refreshflag);
+  // get the error context
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
+  // get the error context
   const { setOpenSnackbar } = ErrorValue;
-
+  // use effect to refresh the data
   useEffect(() => {
     callAPIget('listings/' + HostingId, '')
       .then((response) => {
+        // get the response
         const Responsedata = response as ApiResponse;
+        // get the score and response
         const Resp = Responsedata.listing;
         const scor = Responsedata.listing.reviews;
+        // if the score is exist and length is not 0
         if (scor.length > 0) {
+          // calculate the average score
           const sum = scor.reduce(
             (accumulator, item) => accumulator + item.score,
             0
           );
           const average = sum / scor.length;
+          // set the score
           Resp.score = average;
         } else {
+          // set the score to zero
           Resp.score = 0;
         }
+        // set the data
         console.log(Responsedata.listing);
         loadData(Resp);
+        // if the scroll flag is true
         if (localStorage.getItem('scroll') === 't') {
+          // scroll to the bottom
           setScrollFlag(!scrollFlag);
         }
       })
       .catch((error) => {
+        // meet the error
         setOpenSnackbar({ severity: 'error', message: meetError(error) });
         setOpenSnackbar({ severity: 'error', message: '' });
-        return null; // 处理错误，返回一个默认值
+        // return null because of the error
+        return null;
       });
   }, [refreshflag]);
+  // inital the profile open state is false
   const [isOpen, setOpen] = useState(false);
+  // close the profile
   const close = () => {
     setOpen(false);
   };
+  // open the profile
   const ClickProfile = () => {
     setOpen(!isOpen);
   };
-
+  // go to the host page
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     console.log(userId);
@@ -1735,6 +1876,7 @@ export const ListingDetailLarge = () => {
       navigate('/login');
     }
   };
+  // reload the data
   const reloading = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     console.log(userId);
@@ -1744,29 +1886,37 @@ export const ListingDetailLarge = () => {
       navigate('/');
     }
   };
+  // get all facilities
   const trueKeys = Object.entries(data?.metadata.otherInfo || {})
     .filter(([key, value]) => key && value === true)
     .map(([key]) => key);
-
+  // filter the facilities with true value
   if (trueKeys.length === 0) {
     trueKeys.push('No additional Facilities');
   }
+  // get check the valid range
   const shouldDisableDateCheckOut = (date: Date) => {
-    // 检查日期是否在 disabledBeforeDate 之前
+    // check the date is before the checkin date
     if (OrderCheckin) {
       return date < OrderCheckin;
     } else {
       return false;
     }
   };
+  // inital the book open state is false
   const [isbook, setbook] = useState(false);
+  // set book to false
   const closebook = () => {
     setbook(false);
   };
+  // when user want to book a listing
   const Reverse = () => {
+    // get the token
     const token = localStorage.getItem('token') || '';
     if (token) {
+      // if the checkin date and checkout date is exist
       if (OrderCheckin && OrderCheckout) {
+        // set the data
         data.CheckinDate = OrderCheckin;
         data.CheckoutDate = OrderCheckout;
         data.TotalPrice = inDistance * Number(data.price);
@@ -1776,9 +1926,10 @@ export const ListingDetailLarge = () => {
       navigate('/login');
     }
   };
+  // get the scroll flag
   const componentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // 检查当前路由是否匹配特定的路径
+    // scroll to bottom if the user is adding review
     const timeoutId = setTimeout(() => {
       const ShouldScroll = localStorage.getItem('scroll') === 't';
       if (ShouldScroll && componentRef.current) {
@@ -1786,8 +1937,10 @@ export const ListingDetailLarge = () => {
       }
     }, 30);
     return () => clearTimeout(timeoutId);
-  }, [scrollFlag]); // 在这个数组中列出所有的依赖项
+  }, [scrollFlag]);
+  // get the target menu
   const TargetMenu = useRef<HTMLDivElement | null>(null);
+  // set the return component
   const conponment = (
     <LargeHomePagecss>
       {allimg && (
@@ -1814,6 +1967,7 @@ export const ListingDetailLarge = () => {
                 <img src={item} alt='image' />
               </ImageListItem>
             ))}
+            <LastImg>No more images</LastImg>
           </ImageList>
         </AllImage>
       )}
@@ -1944,6 +2098,7 @@ export const ListingDetailLarge = () => {
             data?.metadata.bedInfo.Bathrooms +
             ' bathrooms'}
         </LargeHouseInfo>
+        <GetAllOwnerBookingListing />
         <LargeCenterLR>
           <LargeFac>
             <LargeType>What this place offers?</LargeType>

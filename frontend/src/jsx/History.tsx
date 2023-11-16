@@ -5,6 +5,7 @@ import { styled } from '@mui/material';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AllBookings, Booking, NullListing } from './get_all_listing';
+// css part
 const LoginOverAll = styled('div')({
   justifyContent: 'center',
   alignItems: 'center',
@@ -85,19 +86,30 @@ const DateRange = styled('p')({
   padding: '0px',
   fontSize: '16px',
 });
+// end of css part
+// this is the history page
+// for a user to see all the booking history
 export const History = () => {
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
+  // set the snackbar
   const { setOpenSnackbar } = ErrorValue;
+  // set the scroll
   localStorage.setItem('scroll', 't');
+  // initial the content
   const [contents, setContent] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // 初始化一个状态来表示数据是否正在加载
+  // initial the loading
+  const [isLoading, setIsLoading] = useState(true);
+  // initial the navigate
   const navigate = useNavigate();
+  // get the hosting id
   const { HostingId } = useParams();
-  const isMounted = useRef(true); // 使用 ref 来跟踪组件是否仍然挂载
+  // use ref to track the component
+  const isMounted = useRef(true);
+  // set the close login page
   const CloseLoginPage = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     console.log(userId);
@@ -107,29 +119,31 @@ export const History = () => {
       navigate('/login');
     }
   };
+  // set the close login page
   useEffect(() => {
     // 在组件卸载时取消未完成的异步操作
     return () => {
       isMounted.current = false;
     };
   }, []);
+  // get the data from backend
   useEffect(() => {
-    // 在组件挂载时或其他适当的生命周期中从后端获取数据
-    // 你可以使用axios、fetch或其他方法来获取数据
+    // when the component is mounted, get the data from backend
     const token = localStorage.getItem('token') || '';
     // Step 1
+    // when the component is mounted, get the data from backend
     callAPIget('bookings', token)
       .then((response) => {
-        console.log(HostingId);
         if (isMounted.current) {
           console.log(response);
+          // set the content
           const AllBoooking = response as AllBookings;
-          console.log(AllBoooking);
           console.log(
             AllBoooking.bookings.filter(
               (item) => String(item.listingId) === String(HostingId)
             )
           );
+          // set the content
           setContent(
             AllBoooking.bookings.filter(
               (item) =>
@@ -137,10 +151,12 @@ export const History = () => {
                 String(item.listingId) === String(HostingId)
             )
           );
+          // set the loading to false
           setIsLoading(false);
         }
       })
       .catch((error) => {
+        // set the error
         setOpenSnackbar({
           severity: 'error',
           message: meetError(error),
@@ -149,19 +165,21 @@ export const History = () => {
           severity: 'error',
           message: '',
         });
+        // set the loading to false
         setIsLoading(false);
       });
   }, []);
+  // initial the content
   let content;
+  // if the data is loading
   if (isLoading) {
-    // 如果数据正在加载，显示加载中信息
+    // if the data is loading, show the loading message
     content = <NullListing>Data is comming...</NullListing>;
   } else if (contents) {
     if (contents.length > 0) {
-      // 如果数据已加载并且不为空，渲染数据
+      // if the data is loaded and not empty, show the data
       content = contents.map((item) => (
         <ReservingRow key={item.id}>
-          {/* 在这里渲染每条数据 */}
           <DateRange>Booker {item.owner}</DateRange>
           <DateRange>
             {dayjs(item.dateRange.startDate).format('MM/DD/YYYY') +
@@ -175,8 +193,7 @@ export const History = () => {
 
           <DateRange
             sx={{
-              color:
-                item.status === 'accepted' ? '#009e2d' : 'rgb(255, 0, 0)',
+              color: item.status === 'accepted' ? '#009e2d' : 'rgb(255, 0, 0)',
             }}
           >
             {' '}
@@ -185,10 +202,11 @@ export const History = () => {
         </ReservingRow>
       ));
     } else {
+      // if the data is empty, show the message
       content = <NullListing>No booking record</NullListing>;
     }
   } else {
-    // 如果数据为空，显示一个提示
+    // if the data is empty, show the message
     content = <NullListing>No booking record</NullListing>;
   }
   return (

@@ -3,12 +3,9 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { meetError, AppContext, ErrorContext } from '../App';
 import { styled } from '@mui/material';
 import dayjs from 'dayjs';
-import {
-  useNavigate,
-  // useParams,
-} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Availability } from './publish';
-// 可以添加其他属性，以匹配实际响应的数据结构
+// the listing interface
 type ListingOver = {
   id: number;
   owner: string;
@@ -22,14 +19,17 @@ type ListingOver = {
     Street: string;
   };
 };
+// Api response interface
 type ApiResponse = {
   listings: ListingOver[];
 };
+// availdata interface
 type availdata = {
   startDate: Date;
   endDate: Date;
   distance: number;
 };
+// Listing interface
 type ListingContent = {
   id: string;
   score: number;
@@ -71,9 +71,70 @@ type ListingContent = {
     content: string;
   }[];
 };
+// Api response interface
 type ApiResponseSpecific = {
   listing: ListingContent;
 };
+// Booking interface
+export type Booking = {
+  id: string;
+  owner: string;
+  dateRange: Availability;
+  totalPrice: number;
+  listingId: string;
+  status: string;
+};
+// All bookings interface
+export type AllBookings = {
+  bookings: Booking[];
+};
+// Booking content interface
+type BookingContent = {
+  dateRange: Availability;
+  totalPrice: number;
+  status: string;
+  id: string;
+  bookingid: string;
+  score: number;
+  title: string;
+  owner: string;
+  address: {
+    City: string;
+    Country: string;
+    Postcode: string;
+    State: string;
+    Street: string;
+  };
+  availability: availdata[];
+  price: string;
+  thumbnail: string;
+  metadata: {
+    type: string;
+    bedInfo: {
+      Guests: string;
+      Bedrooms: string;
+      Beds: string;
+      Bathrooms: string;
+    };
+    otherInfo: {
+      WiFi: boolean;
+      TV: boolean;
+      Kitchen: boolean;
+      WashingMachine: boolean;
+      AirConditioning: boolean;
+      FreeParking: boolean;
+    };
+    images: string[];
+  };
+  totalday: number;
+  published: boolean;
+  postedOn: string;
+  reviews: {
+    score: number;
+    content: string;
+  }[];
+};
+// css style
 export const NullListing = styled('p')({
   display: 'flex',
   justifyContent: 'center',
@@ -113,7 +174,7 @@ const PublicReview = styled('div')({
 const Publicstar = styled('img')({
   width: '15px',
   height: '15px',
-  margin: '0px',
+  margin: '0px 0px 0px 5px',
   padding: '0px',
 });
 const PublicreviewRating = styled('p')({
@@ -166,6 +227,9 @@ const PublicListingTitle = styled('p')({
   margin: '0px 0px 0px 20px',
   padding: '0px',
   fontWeight: '500',
+  textOverflow: 'ellipsis',
+  overflowX: 'hidden',
+  minHeight: '20px',
 });
 const PublicDate = styled('p')({
   margin: '0px 0px 0px 3px',
@@ -186,271 +250,6 @@ const Publicprice = styled('p')({
   textAlign: 'left',
   marginLeft: '20px',
 });
-export const GetAllListing = () => {
-  const ErrorValue = useContext(ErrorContext);
-  if (!ErrorValue) {
-    // Handle the case where contextValue is null (optional)
-    return null;
-  }
-  const { setOpenSnackbar } = ErrorValue;
-  const navigate = useNavigate();
-  const FilterValue = useContext(AppContext);
-  if (!FilterValue) {
-    // Handle the case where contextValue is null (optional)
-    return null;
-  }
-  const {
-    MinPrice,
-    MaxPrice,
-    Checkin,
-    Checkout,
-    MinBed,
-    MaxBed,
-    sortWay,
-    searchcontent,
-  } = FilterValue;
-  const [data, setData] = useState<ApiResponse>(); // 初始化一个状态来存储从后端获取的数据
-  const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]); // 初始化一个状态来存储从后端获取的数据
-  const [isLoading, setIsLoading] = useState(true); // 初始化一个状态来表示数据是否正在加载
-  const isMounted = useRef(true); // 使用 ref 来跟踪组件是否仍然挂载
-  const DetailLooking = (HostingID: string) => {
-    const userId = localStorage.getItem('LoggedUserEmail');
-    if (localStorage.token) {
-      navigate(`/user/${userId}/listing/${HostingID}/logged`);
-    } else {
-      navigate(`/listing/${HostingID}`);
-    }
-  };
-  useEffect(() => {
-    // 在组件卸载时取消未完成的异步操作
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-  useEffect(() => {
-    // 在组件挂载时或其他适当的生命周期中从后端获取数据
-    // 你可以使用axios、fetch或其他方法来获取数据
-    callAPIget('listings', '')
-      .then((response) => {
-        const Minp = MinPrice || 1;
-        const Maxp = MaxPrice || 99999;
-        if (isMounted.current) {
-          const theResponse = response as ApiResponse;
-          const ownerData = theResponse.listings;
-          const filterdata = ownerData.filter((item): item is ListingOver => {
-            const address = item.address;
-            const totalAddress = `${address.Street}, ${address.City}, ${address.State}, ${address.Postcode}, ${address.Country}`;
-            return (
-              item !== null &&
-              Number(item.price) <= Maxp &&
-              Number(item.price) >= Minp &&
-              (item.title.includes(searchcontent) ||
-                totalAddress.includes(searchcontent))
-            );
-          });
-          setData({ listings: filterdata });
-        }
-      })
-      .catch((error) => {
-        setOpenSnackbar({
-          severity: 'error',
-          message: meetError(error),
-        });
-        setOpenSnackbar({
-          severity: 'error',
-          message: '',
-        });
-        setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
-      });
-  }, []);
-  useEffect(() => {
-    if (data && data.listings) {
-      const promises = data.listings.map((item) => {
-        const token = localStorage.getItem('token') || '';
-        return callAPIget('listings/' + item.id, token)
-          .then((response) => {
-            const r = response as ApiResponseSpecific;
-            r.listing.id = String(item.id);
-            const scor = r.listing.reviews;
-            if (scor.length > 0) {
-              const sum = scor.reduce(
-                (accumulator, item) => accumulator + item.score,
-                0
-              );
-              const average = sum / scor.length;
-              r.listing.score = average;
-            } else {
-              r.listing.score = 0;
-            }
-            return r;
-          })
-          .catch((error) => {
-            setOpenSnackbar({
-              severity: 'error',
-              message: meetError(error),
-            });
-            setOpenSnackbar({
-              severity: 'error',
-              message: '',
-            });
-            return null; // 处理错误，返回一个默认值
-          });
-      });
-      Promise.all(promises)
-        .then((specificDataArray) => {
-          const MinB = MinBed || 1;
-          const MaxB = MaxBed || 99999;
-          if (isMounted.current) {
-            // 过滤掉可能为null的值
-            let NotNoneArray = specificDataArray.filter(
-              (item): item is ApiResponseSpecific =>
-                item !== null &&
-                item.listing.published === true &&
-                Number(item.listing.metadata.bedInfo.Beds) <= MaxB &&
-                Number(item.listing.metadata.bedInfo.Beds) >= MinB
-            );
-            if (Checkin && Checkout) {
-              NotNoneArray = NotNoneArray.filter(
-                (item): item is ApiResponseSpecific => {
-                  return item.listing.availability.some(
-                    (items): items is availdata => {
-                      return (
-                        dayjs(items.startDate) <= dayjs(Checkin) &&
-                        dayjs(items.endDate) >= dayjs(Checkout)
-                      );
-                    }
-                  );
-                }
-              );
-            } else if (Checkin) {
-              NotNoneArray = NotNoneArray.filter(
-                (item): item is ApiResponseSpecific =>
-                  item.listing.availability.some(
-                    (items): items is availdata => {
-                      return (
-                        dayjs(items.startDate) <= dayjs(Checkin) &&
-                        dayjs(Checkin) <= dayjs(items.endDate)
-                      );
-                    }
-                  )
-              );
-            } else if (Checkout) {
-              NotNoneArray = NotNoneArray.filter(
-                (item): item is ApiResponseSpecific =>
-                  item.listing.availability.some(
-                    (items): items is availdata =>
-                      dayjs(items.endDate) >= dayjs(Checkout) &&
-                      dayjs(items.startDate) <= dayjs(Checkout)
-                  )
-              );
-            }
-            let sortedData;
-            if (sortWay === null) {
-              sortedData = NotNoneArray.sort(
-                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
-                  const titleA = a.listing.title.toLowerCase();
-                  const titleB = b.listing.title.toLowerCase();
-                  if (titleA < titleB) {
-                    return -1;
-                  } else if (titleA > titleB) {
-                    return 1;
-                  } else {
-                    return 0;
-                  }
-                }
-              );
-            } else if (sortWay === true) {
-              sortedData = NotNoneArray.sort(
-                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
-                  const titleA = a.listing.score;
-                  const titleB = b.listing.score;
-                  if (titleA > titleB) {
-                    return -1;
-                  } else if (titleA < titleB) {
-                    return 1;
-                  } else {
-                    return 0;
-                  }
-                }
-              );
-            } else {
-              sortedData = NotNoneArray.sort(
-                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
-                  const titleA = a.listing.score;
-                  const titleB = b.listing.score;
-                  if (titleA < titleB) {
-                    return -1;
-                  } else if (titleA > titleB) {
-                    return 1;
-                  } else {
-                    return 0;
-                  }
-                }
-              );
-            }
-            setSpecificData(sortedData);
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          setOpenSnackbar({
-            severity: 'error',
-            message: meetError(error),
-          });
-          setOpenSnackbar({
-            severity: 'error',
-            message: '',
-          });
-          if (isMounted.current) {
-            setIsLoading(false);
-          }
-        });
-    }
-  }, [data?.listings]);
-  let content;
-  if (isLoading) {
-    // 如果数据正在加载，显示加载中信息
-    content = <NullListing>All listing is comming...</NullListing>;
-  } else if (SpecificDatas) {
-    if (SpecificDatas.length > 0) {
-      // 如果数据已加载并且不为空，渲染数据
-      content = SpecificDatas.map((item) => (
-        <PublicListing
-          key={item.listing.id}
-          onClick={() => {
-            DetailLooking(item.listing.id);
-          }}
-        >
-          {/* 在这里渲染每条数据 */}
-          <IMGcontainer>
-            <PublicListingImg src={item.listing.thumbnail}></PublicListingImg>
-          </IMGcontainer>
-          <PublicBottom>
-            <PublicListingTitle>{item.listing.title}</PublicListingTitle>
-            <PublicReview>
-              <Publicstar src='/img/star.png'></Publicstar>
-              <PublicreviewRating>
-                {String(item.listing.score.toFixed(2))}
-              </PublicreviewRating>
-            </PublicReview>
-          </PublicBottom>
-          <PublicDate>
-            {dayjs(item.listing.availability[0]?.startDate).format(
-              'MM/DD/YYYY'
-            ) +
-              '—' +
-              dayjs(item.listing.availability[0]?.endDate).format('MM/DD/YYYY')}
-          </PublicDate>
-          <Publicprice>${item.listing.price} AUD</Publicprice>
-        </PublicListing>
-      ));
-    }
-  } else {
-    // 如果数据为空，显示一个提示
-    content = <NullListing>Seems there not exist any listing</NullListing>;
-  }
-  return <ListingContentdiv>{content}</ListingContentdiv>;
-};
 const ListingRow = styled('div')({
   width: '100%',
   height: '150px',
@@ -476,6 +275,16 @@ const ListingRowR = styled('div')({
   '&:hover': {
     backgroundColor: 'rgb(230, 230, 230)',
   },
+});
+const ListingRowInDetail = styled('div')({
+  width: '100%',
+  height: '100px',
+  margin: '0px',
+  padding: '0px 0px 0px 20px',
+  alignItems: 'center',
+  display: 'flex',
+  borderBottom: '1px solid rgb(197, 197, 197)',
+  justifyContent: 'space-between',
 });
 export const LeftPart = styled('div')({
   display: 'flex',
@@ -589,327 +398,22 @@ const ListingBtn = styled('button')({
     cursor: 'not-allowed',
   },
 });
-
-export const GetAllOwnerListing = () => {
-  const ErrorValue = useContext(ErrorContext);
-  if (!ErrorValue) {
-    // Handle the case where contextValue is null (optional)
-    return null;
-  }
-  const { setOpenSnackbar } = ErrorValue;
-  const [data, setData] = useState<ApiResponse>(); // 初始化一个状态来存储从后端获取的数据
-  const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]); // 初始化一个状态来存储从后端获取的数据
-  const [isLoading, setIsLoading] = useState(true); // 初始化一个状态来表示数据是否正在加载
-  const isMounted = useRef(true); // 使用 ref 来跟踪组件是否仍然挂载
-  const [eff1, seteff1] = useState(true);
-  const [eff2, seteff2] = useState(true);
-  const navigate = useNavigate();
-  useEffect(() => {
-    // 在组件卸载时取消未完成的异步操作
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-  useEffect(() => {
-    // 在组件挂载时或其他适当的生命周期中从后端获取数据
-    // 你可以使用axios、fetch或其他方法来获取数据
-    callAPIget('listings', '')
-      .then((response) => {
-        if (isMounted.current) {
-          const theResponse = response as ApiResponse;
-          const ownerData = theResponse.listings.filter((items) => {
-            return items.owner === localStorage.getItem('LoggedUserEmail');
-          });
-          setData({ listings: ownerData });
-          seteff2(!eff2);
-        }
-      })
-      .catch((error) => {
-        setOpenSnackbar({
-          severity: 'error',
-          message: meetError(error),
-        });
-        setOpenSnackbar({
-          severity: 'error',
-          message: '',
-        });
-        setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
-      });
-  }, [eff1]);
-  useEffect(() => {
-    if (data && data.listings) {
-      console.log(data);
-      const promises = data.listings.map((item) => {
-        console.log(item);
-        const token = localStorage.getItem('token') || '';
-        return callAPIget('listings/' + item.id, token)
-          .then((response) => {
-            const r = response as ApiResponseSpecific;
-            r.listing.id = String(item.id);
-            const scor = r.listing.reviews;
-            if (scor.length > 0) {
-              const sum = scor.reduce(
-                (accumulator, item) => accumulator + item.score,
-                0
-              );
-              const average = sum / scor.length;
-              r.listing.score = average;
-            } else {
-              r.listing.score = 0;
-            }
-            return r;
-          })
-          .catch((error) => {
-            setOpenSnackbar({
-              severity: 'error',
-              message: meetError(error),
-            });
-            setOpenSnackbar({
-              severity: 'error',
-              message: '',
-            });
-            return null; // 处理错误，返回一个默认值
-          });
-      });
-      Promise.all(promises)
-        .then((specificDataArray) => {
-          console.log(specificDataArray);
-          // isMounted.current = true;
-          if (isMounted.current) {
-            // 过滤掉可能为null的值
-            const filteredSpecificDataArray = specificDataArray.filter(
-              (item): item is ApiResponseSpecific => item !== null
-            );
-            setSpecificData(filteredSpecificDataArray);
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          setOpenSnackbar({
-            severity: 'error',
-            message: meetError(error),
-          });
-          setOpenSnackbar({
-            severity: 'error',
-            message: '',
-          });
-          if (isMounted.current) {
-            setIsLoading(false);
-          }
-        });
-    }
-  }, [data?.listings]);
-  const EditHosting = (HostingID: string) => {
-    const userId = localStorage.getItem('LoggedUserEmail');
-    if (localStorage.token) {
-      navigate(`/user/${userId}/hosting/edit/${HostingID}`);
-    } else {
-      navigate('/login');
-    }
-  };
-  const DeleteHosting = (HostingID: string) => {
-    const token = localStorage.getItem('token') || '';
-    callAPIdelete('listings/' + HostingID, token)
-      .then(() => {
-        setOpenSnackbar({
-          severity: 'success',
-          message: 'Your hosting has been Deleted !',
-        });
-        setOpenSnackbar({
-          severity: 'success',
-          message: '',
-        });
-        seteff1(!eff1);
-      })
-      .catch((error) => {
-        setOpenSnackbar({
-          severity: 'error',
-          message: meetError(error),
-        });
-        setOpenSnackbar({
-          severity: 'error',
-          message: '',
-        });
-      });
-  };
-  const PublishHosting = (HostingID: string) => {
-    const userId = localStorage.getItem('LoggedUserEmail');
-    if (localStorage.token) {
-      navigate(`/user/${userId}/hosting/publish/${HostingID}`);
-    } else {
-      navigate('/login');
-    }
-  };
-  const unPublishHosting = (HostingID: string) => {
-    const token = localStorage.getItem('token') || '';
-    callAPIput('listings/unpublish/' + HostingID, {}, token)
-      .then(() => {
-        setOpenSnackbar({
-          severity: 'success',
-          message: 'Your hosting has been successfully downgraded !',
-        });
-        setOpenSnackbar({
-          severity: 'success',
-          message: '',
-        });
-        seteff1(!eff1);
-      })
-      .catch((error) => {
-        setOpenSnackbar({
-          severity: 'error',
-          message: meetError(error),
-        });
-        setOpenSnackbar({
-          severity: 'error',
-          message: '',
-        });
-      });
-  };
-  let content;
-  if (isLoading) {
-    // 如果数据正在加载，显示加载中信息
-    content = <NullListing>Data is comming...</NullListing>;
-  } else if (SpecificDatas) {
-    if (SpecificDatas.length > 0) {
-      // 如果数据已加载并且不为空，渲染数据
-      content = SpecificDatas.map((item, index) => (
-        <ListingRow key={index}>
-          {/* 在这里渲染每条数据 */}
-          <LeftPart>
-            <SmallListingImage src={item.listing.thumbnail}></SmallListingImage>
-            <ListingInfo>
-              <ListingType>{item.listing.metadata.type}</ListingType>
-              <ListingTitle>{item.listing.title}</ListingTitle>
-              <GuestInfo>
-                <LogoPath src='/img/bath.png'></LogoPath>
-                <ListingGuest>
-                  {item.listing.metadata.bedInfo.Bathrooms}
-                </ListingGuest>
-                <LogoPath src='/img/bed.png'></LogoPath>
-                <ListingGuest>
-                  {item.listing.metadata.bedInfo.Beds}
-                </ListingGuest>
-              </GuestInfo>
-              <ListingPrice>${item.listing.price} AUD</ListingPrice>
-              <ReviewPart>
-                <ReviewBlock>
-                  <Publicstar src='/img/star.png'></Publicstar>
-                  <PublicreviewRating>
-                    {String(item.listing.score.toFixed(2))}
-                  </PublicreviewRating>
-                </ReviewBlock>
-                <ReviewBlock>
-                  <Publicstar src='/img/profile.png'></Publicstar>
-                  <PublicreviewRating>
-                    {item.listing.reviews.length}
-                  </PublicreviewRating>
-                </ReviewBlock>
-              </ReviewPart>
-            </ListingInfo>
-          </LeftPart>
-          <RightButton>
-            <ListingBtn
-              onClick={() => {
-                if (item.listing.published) {
-                  unPublishHosting(String(data?.listings[index]?.id));
-                } else {
-                  PublishHosting(String(data?.listings[index]?.id));
-                }
-              }}
-            >
-              {item.listing.published ? 'UnPublish' : 'Publish'}
-            </ListingBtn>
-            <ListingBtn
-              onClick={() => {
-                EditHosting(String(data?.listings[index]?.id));
-              }}
-            >
-              Edit
-            </ListingBtn>
-            <ListingBtn
-              onClick={() => {
-                DeleteHosting(String(data?.listings[index]?.id));
-              }}
-            >
-              Delete
-            </ListingBtn>
-            {/* <ListingBtn>Delete</ListingBtn> */}
-          </RightButton>
-        </ListingRow>
-      ));
-    } else {
-      content = <NullListing>Seems there not exist any listing</NullListing>;
-    }
-  } else {
-    // 如果数据为空，显示一个提示
-    content = <NullListing>Seems there not exist any listing</NullListing>;
-  }
-
-  return <ListingContentOwner>{content}</ListingContentOwner>;
-};
-export type Booking = {
-  id: string;
-  owner: string;
-  dateRange: Availability;
-  totalPrice: number;
-  listingId: string;
-  status: string;
-};
-export type AllBookings = {
-  bookings: Booking[];
-};
-type BookingContent = {
-  dateRange: Availability;
-  totalPrice: number;
-  status: string;
-  id: string;
-  bookingid: string;
-  score: number;
-  title: string;
-  owner: string;
-  address: {
-    City: string;
-    Country: string;
-    Postcode: string;
-    State: string;
-    Street: string;
-  };
-  availability: availdata[];
-  price: string;
-  thumbnail: string;
-  metadata: {
-    type: string;
-    bedInfo: {
-      Guests: string;
-      Bedrooms: string;
-      Beds: string;
-      Bathrooms: string;
-    };
-    otherInfo: {
-      WiFi: boolean;
-      TV: boolean;
-      Kitchen: boolean;
-      WashingMachine: boolean;
-      AirConditioning: boolean;
-      FreeParking: boolean;
-    };
-    images: string[];
-  };
-  totalday: number;
-  published: boolean;
-  postedOn: string;
-  reviews: {
-    score: number;
-    content: string;
-  }[];
-};
 const BookingContentOwner = styled('div')({
-  zIndex: '0',
+  zIndex: '1',
   padding: '0px',
   width: '100%',
-  height: 'auto',
+  minHeight: '300px',
+  maxHeight: '300px',
   display: 'flex',
-  flexWrap: 'wrap',
+  overflow: 'scroll',
+  flexDirection: 'column',
+  borderBottom: '1px solid rgb(200,200,200)',
+});
+const BookingContentOwnerDetails = styled('div')({
+  padding: '0px',
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
 });
 const Pstatus = styled('div')({
   fontSize: '16px',
@@ -934,193 +438,6 @@ export const DateRange = styled('p')({
   textOverflow: 'ellipsis',
   overflow: 'hidden',
 });
-export const GetAllOwnerBooking = () => {
-  const ErrorValue = useContext(ErrorContext);
-  if (!ErrorValue) {
-    // Handle the case where contextValue is null (optional)
-    return null;
-  }
-  const { setOpenSnackbar } = ErrorValue;
-  const [data, setData] = useState<AllBookings>(); // 初始化一个状态来存储从后端获取的数据
-  const [SpecificDatas, setSpecificData] = useState<BookingContent[]>([]); // 初始化一个状态来存储从后端获取的数据
-  const [isLoading, setIsLoading] = useState(true); // 初始化一个状态来表示数据是否正在加载
-  const isMounted = useRef(true); // 使用 ref 来跟踪组件是否仍然挂载
-  const navigate = useNavigate();
-  const showDetail = (index: number) => {
-    const HostingId = SpecificDatas[index]?.id;
-    if (HostingId) {
-      const userId = localStorage.getItem('LoggedUserEmail');
-      if (localStorage.token) {
-        navigate(`/user/${userId}/listing/${HostingId}/logged`);
-      } else {
-        navigate(`/listing/${HostingId}`);
-      }
-    }
-  };
-  const GoesReview = (index: number) => {
-    const HostingId = SpecificDatas[index]?.id;
-    const BookingId = SpecificDatas[index]?.bookingid || '';
-    localStorage.setItem('BookingId', BookingId);
-    if (HostingId) {
-      const userId = localStorage.getItem('LoggedUserEmail');
-      if (localStorage.token) {
-        navigate(`/user/${userId}/listing/${HostingId}/logged/review`);
-      } else {
-        navigate('/login');
-      }
-    }
-  };
-  useEffect(() => {
-    // 在组件卸载时取消未完成的异步操作
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-  useEffect(() => {
-    // 在组件挂载时或其他适当的生命周期中从后端获取数据
-    // 你可以使用axios、fetch或其他方法来获取数据
-    const token = localStorage.getItem('token') || '';
-    callAPIget('bookings', token)
-      .then((response) => {
-        console.log(response);
-        if (isMounted.current) {
-          const theResponse = response as AllBookings;
-          const ownerData = theResponse.bookings.filter((items) => {
-            return (
-              items.owner === localStorage.getItem('LoggedUserEmail') &&
-              items.status !== 'declined'
-            );
-          });
-          setData({ bookings: ownerData });
-        }
-      })
-      .catch((error) => {
-        setOpenSnackbar({
-          severity: 'error',
-          message: meetError(error),
-        });
-        setOpenSnackbar({
-          severity: 'error',
-          message: '',
-        });
-        setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
-      });
-  }, []);
-
-  useEffect(() => {
-    if (data && data.bookings) {
-      const promises = data.bookings.map((item) => {
-        const token = localStorage.getItem('token') || '';
-        return callAPIget('listings/' + item.listingId, token)
-          .then((response) => {
-            const r = response as ApiResponseSpecific;
-            const result = r.listing as BookingContent;
-            result.id = String(item.listingId);
-            result.bookingid = String(item.id);
-            result.dateRange = item.dateRange;
-            result.totalPrice = item.totalPrice;
-            result.status = item.status;
-            return result;
-          })
-          .catch((error) => {
-            setOpenSnackbar({
-              severity: 'error',
-              message: meetError(error),
-            });
-            setOpenSnackbar({
-              severity: 'error',
-              message: '',
-            });
-            return null; // 处理错误，返回一个默认值
-          });
-      });
-      Promise.all(promises)
-        .then((specificDataArray) => {
-          if (isMounted.current) {
-            // 过滤掉可能为null的值
-            const filteredSpecificDataArray = specificDataArray.filter(
-              (item): item is BookingContent =>
-                item !== null && item.published === true
-            );
-            setSpecificData(filteredSpecificDataArray);
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          setOpenSnackbar({
-            severity: 'error',
-            message: meetError(error),
-          });
-          setOpenSnackbar({
-            severity: 'error',
-            message: '',
-          });
-          if (isMounted.current) {
-            setIsLoading(false);
-          }
-        });
-    }
-  }, [data]);
-  let content;
-  if (isLoading) {
-    // 如果数据正在加载，显示加载中信息
-    content = <NullListing>Data is comming...</NullListing>;
-  } else if (SpecificDatas) {
-    if (SpecificDatas.length > 0) {
-      // 如果数据已加载并且不为空，渲染数据
-      content = SpecificDatas.map((item, index) => (
-        <ListingRow key={index}>
-          {/* 在这里渲染每条数据 */}
-          <LeftPart
-            onClick={() => {
-              showDetail(index);
-            }}
-          >
-            <SmallListingImage src={item.thumbnail}></SmallListingImage>
-            <ListingInfo>
-              <ListingType>{item.metadata.type}</ListingType>
-              <DateRange>
-                {dayjs(item.dateRange.startDate).format('MM/DD/YYYY') +
-                  ' - ' +
-                  dayjs(item.dateRange.endDate).format('MM/DD/YYYY')}
-              </DateRange>
-              <GuestInfo>
-                <LogoPath src='/img/bath.png'></LogoPath>
-                <ListingGuest>{item.metadata.bedInfo.Bathrooms}</ListingGuest>
-                <LogoPath src='/img/bed.png'></LogoPath>
-                <ListingGuest>{item.metadata.bedInfo.Beds}</ListingGuest>
-              </GuestInfo>
-              <ListingPrice>${item.totalPrice.toFixed(2)} AUD</ListingPrice>
-            </ListingInfo>
-          </LeftPart>
-          <RightButton>
-            <ReviewBlock>
-              <Pstatus>
-                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-              </Pstatus>
-            </ReviewBlock>
-            <ListingBtn
-              onClick={() => {
-                GoesReview(index);
-              }}
-              disabled={item.status === 'pending'}
-            >
-              Review
-            </ListingBtn>
-            {/* <ListingBtn>Delete</ListingBtn> */}
-          </RightButton>
-        </ListingRow>
-      ));
-    } else {
-      content = null;
-    }
-  } else {
-    // 如果数据为空，显示一个提示
-    content = null;
-  }
-
-  return <BookingContentOwner>{content}</BookingContentOwner>;
-};
 const ReservingOwner = styled('div')({
   zIndex: '0',
   padding: '0px',
@@ -1218,121 +535,1125 @@ const Reject = styled('button')({
     cursor: 'not-allowed',
   },
 });
-export const GetAllBookingRequest = () => {
+// css part end
+// function part start
+// this is the page for owner to see all the Hosting they have the order
+export const GetAllListingOrdered = () => {
+  // get the token from localstorage
+  const token = localStorage.getItem('token');
+  // if token is null, return null
+  if (!token) {
+    return null;
+  }
+  // get the context value from AppContext
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
   const { setOpenSnackbar } = ErrorValue;
-  const [SpecificDatas, setSpecificData] = useState<BookingContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hooktoupdate, sethook] = useState(false);
-  const isMounted = useRef(true); // 使用 ref 来跟踪组件是否仍然挂载
+  // use the navigate function from react-router-dom to redirect the page
+  const navigate = useNavigate();
+  const FilterValue = useContext(AppContext);
+  if (!FilterValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  // get the value from context
+  const {
+    MinPrice,
+    MaxPrice,
+    Checkin,
+    Checkout,
+    MinBed,
+    MaxBed,
+    sortWay,
+    searchcontent,
+  } = FilterValue;
+  // inital the data state
+  const [data, setData] = useState<ApiResponse>();
+  // inital the all booing state
+  const [allmybooking, setallmybooking] = useState<string[]>([]);
+  // inital the final data state
+  const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]);
+  // inital the loading state
+  const [isLoadings, setIsLoadings] = useState(true);
+  // set mounted to true
+  const isMounted = useRef(true);
+  // when the user click the listing, it will redirect to the detail page
+  const DetailLooking = (HostingID: string) => {
+    const userId = localStorage.getItem('LoggedUserEmail');
+    // if the user is logged in, it will redirect to the logged in detail page
+    if (localStorage.token) {
+      navigate(`/user/${userId}/listing/${HostingID}/logged`);
+    } else {
+      // if the user is not logged in, it will redirect to the not logged in detail page
+      navigate(`/listing/${HostingID}`);
+    }
+  };
+  // check the conponemnt is mounted or not
   useEffect(() => {
     // 在组件卸载时取消未完成的异步操作
     return () => {
       isMounted.current = false;
     };
   }, []);
+  // get the data from backend
   useEffect(() => {
-    // 在组件挂载时或其他适当的生命周期中从后端获取数据
-    // 你可以使用axios、fetch或其他方法来获取数据
+    // get the token from localstorage
     const token = localStorage.getItem('token') || '';
-    // Step 1
+    // call the api function
     callAPIget('bookings', token)
       .then((response) => {
+        console.log(response);
+        // if the component is mounted, set the data
         if (isMounted.current) {
-          const AllBoooking = response as AllBookings;
-          AllBoooking.bookings = AllBoooking.bookings.filter(
-            (item) => item.status === 'pending'
-          );
-          // Step2
-          callAPIget('listings', '')
-            .then((response) => {
-              if (isMounted.current) {
-                const theResponse = response as ApiResponse;
-                // filter
-                const ownerData = theResponse.listings.filter((items) => {
-                  return (
-                    items.owner === localStorage.getItem('LoggedUserEmail')
-                  );
-                });
-                const ALLmylisting: string[] = [];
-                ownerData.forEach((item) => {
-                  ALLmylisting.push(String(item.id));
-                });
-                // step 3
-                if (AllBoooking && ALLmylisting) {
-                  console.log(ALLmylisting);
-                  const fillteredBooking: Booking[] =
-                    AllBoooking.bookings.filter((item) => {
-                      return ALLmylisting.includes(String(item.listingId));
-                    });
-                  const promises = fillteredBooking.map((item) => {
-                    const token = localStorage.getItem('token') || '';
-                    return callAPIget('listings/' + item.listingId, token)
-                      .then((response) => {
-                        const r = response as ApiResponseSpecific;
-                        const result = r.listing as BookingContent;
-                        result.id = String(item.id);
-                        result.dateRange = item.dateRange;
-                        result.totalPrice = item.totalPrice;
-                        result.status = item.status;
-                        result.owner = item.owner;
-                        return result;
-                      })
-                      .catch((error) => {
-                        setOpenSnackbar({
-                          severity: 'error',
-                          message: meetError(error),
-                        });
-                        setOpenSnackbar({
-                          severity: 'error',
-                          message: '',
-                        });
-                        return null; // 处理错误，返回一个默认值
-                      });
-                  });
-                  Promise.all(promises)
-                    .then((specificDataArray) => {
-                      if (isMounted.current) {
-                        // 过滤掉可能为null的值
-                        const filteredSpecificDataArray =
-                          specificDataArray.filter(
-                            (item): item is BookingContent => item !== null
-                          );
-                        setSpecificData(filteredSpecificDataArray);
-                        setIsLoading(false);
-                      }
-                    })
-                    .catch((error) => {
-                      setOpenSnackbar({
-                        severity: 'error',
-                        message: meetError(error),
-                      });
-                      setOpenSnackbar({
-                        severity: 'error',
-                        message: '',
-                      });
-                      if (isMounted.current) {
-                        setIsLoading(false);
-                      }
-                    });
-                }
-              }
-            })
-            .catch((error) => {
-              setOpenSnackbar({
-                severity: 'error',
-                message: meetError(error),
-              });
-              setOpenSnackbar({
-                severity: 'error',
-                message: '',
-              });
-              setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
+          // set the data
+          const theResponse = response as AllBookings;
+          // filter the data not belong to the user and status is not declined
+          const ownerData = theResponse.bookings.filter((items) => {
+            return (
+              items.owner === localStorage.getItem('LoggedUserEmail') &&
+              items.status !== 'declined'
+            );
+          });
+          // get all the listing id
+          const Allid: string[] = [];
+          // remove the duplicate id
+          ownerData.forEach((item) => {
+            if (!Allid.includes(String(item.listingId))) {
+              Allid.push(item.listingId);
+            }
+          });
+          // set the all booking id
+          setallmybooking(Allid);
+        }
+      })
+      .catch((error) => {
+        // if the component is mounted, set the error
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        // set the loading to false
+        setIsLoadings(false); // 如果发生错误，也需要设置isLoading为false
+      });
+  }, []);
+  useEffect(() => {
+    // call the api function
+    callAPIget('listings', '')
+      .then((response) => {
+        // get the min price and max price
+        const Minp = MinPrice || 1;
+        const Maxp = MaxPrice || 99999;
+        // if the component is mounted, set the data
+        if (isMounted.current) {
+          // set the data
+          const theResponse = response as ApiResponse;
+          const ownerData = theResponse.listings;
+          // filter the data satisfy the condition
+          // price, title, address are all satisfy the condition
+          const filterdata = ownerData.filter((item): item is ListingOver => {
+            const address = item.address;
+            const totalAddress = `${address.Street}, ${address.City}, ${address.State}, ${address.Postcode}, ${address.Country}`;
+            return (
+              item !== null &&
+              allmybooking.includes(String(item.id)) === true &&
+              Number(item.price) <= Maxp &&
+              Number(item.price) >= Minp &&
+              (item.title.includes(searchcontent) ||
+                totalAddress.includes(searchcontent))
+            );
+          });
+          // set the data
+          setData({ listings: filterdata });
+        }
+      })
+      .catch((error) => {
+        // if the component is mounted, set the error
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        // set the loading to false
+        setIsLoadings(false);
+      });
+  }, [allmybooking]);
+  useEffect(() => {
+    // if the data is not null
+    if (data && data.listings) {
+      // for all the data, get the specific data
+      const promises = data.listings.map((item) => {
+        const token = localStorage.getItem('token') || '';
+        // call the api function
+        return callAPIget('listings/' + item.id, token)
+          .then((response) => {
+            // copy the data
+            const r = response as ApiResponseSpecific;
+            // set the id and score
+            r.listing.id = String(item.id);
+            const scor = r.listing.reviews;
+            // if the score is not null, calculate the average score
+            if (scor.length > 0) {
+              // calculate the average score
+              const sum = scor.reduce(
+                (accumulator, item) => accumulator + item.score,
+                0
+              );
+              const average = sum / scor.length;
+              // set the score
+              r.listing.score = average;
+            } else {
+              // if the score is null, set the score to 0
+              r.listing.score = 0;
+            }
+            // return the data
+            return r;
+          })
+          .catch((error) => {
+            // if the component is mounted, set the error
+            setOpenSnackbar({
+              severity: 'error',
+              message: meetError(error),
             });
+            setOpenSnackbar({
+              severity: 'error',
+              message: '',
+            });
+            // set the loading to false
+            return null; // 处理错误，返回一个默认值
+          });
+      });
+      Promise.all(promises)
+        .then((specificDataArray) => {
+          // get the min bed and max bed
+          const MinB = MinBed || 1;
+          const MaxB = MaxBed || 99999;
+          // if the component is mounted, set the data
+          if (isMounted.current) {
+            // filter the data satisfy the condition
+            // condition: published, bed, checkin, checkout
+            let NotNoneArray = specificDataArray.filter(
+              (item): item is ApiResponseSpecific =>
+                item !== null &&
+                item.listing.published === true &&
+                Number(item.listing.metadata.bedInfo.Bedrooms) <= MaxB &&
+                Number(item.listing.metadata.bedInfo.Bedrooms) >= MinB
+            );
+            // if the checkin and checkout is not null, filter the data satisfy the condition
+            if (Checkin && Checkout) {
+              // filter the data satisfy the condition
+              // condition: from checkin to checkout are available for the listing
+              NotNoneArray = NotNoneArray.filter(
+                (item): item is ApiResponseSpecific => {
+                  return item.listing.availability.some(
+                    (items): items is availdata => {
+                      return (
+                        dayjs(items.startDate) <= dayjs(Checkin) &&
+                        dayjs(items.endDate) >= dayjs(Checkout)
+                      );
+                    }
+                  );
+                }
+              );
+            } else if (Checkin) {
+              // if only checkin is not null, filter the data satisfy the condition
+              // if exist the data satisfy the condition, return true
+              NotNoneArray = NotNoneArray.filter(
+                (item): item is ApiResponseSpecific =>
+                  item.listing.availability.some(
+                    (items): items is availdata => {
+                      return (
+                        dayjs(items.startDate) <= dayjs(Checkin) &&
+                        dayjs(Checkin) <= dayjs(items.endDate)
+                      );
+                    }
+                  )
+              );
+            } else if (Checkout) {
+              // if only checkout is not null, filter the data satisfy the condition
+              // if exist the data satisfy the condition, return true
+              NotNoneArray = NotNoneArray.filter(
+                (item): item is ApiResponseSpecific =>
+                  item.listing.availability.some(
+                    (items): items is availdata =>
+                      dayjs(items.endDate) >= dayjs(Checkout) &&
+                      dayjs(items.startDate) <= dayjs(Checkout)
+                  )
+              );
+            }
+            // initialize the sorted data
+            let sortedData;
+            // if the sort way is null, sort the data by title
+            if (sortWay === null) {
+              sortedData = NotNoneArray.sort(
+                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
+                  const titleA = a.listing.title.toLowerCase();
+                  const titleB = b.listing.title.toLowerCase();
+                  // sort the data by title
+                  if (titleA < titleB) {
+                    return -1;
+                  } else if (titleA > titleB) {
+                    return 1;
+                  } else {
+                    return 0;
+                  }
+                }
+              );
+            } else if (sortWay === true) {
+              // if the sort way is true, sort the data by score in descending order
+              sortedData = NotNoneArray.sort(
+                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
+                  const titleA = a.listing.score;
+                  const titleB = b.listing.score;
+                  // sort the data by score in descending order
+                  if (titleA > titleB) {
+                    return -1;
+                  } else if (titleA < titleB) {
+                    return 1;
+                  } else {
+                    return 0;
+                  }
+                }
+              );
+            } else {
+              // if the sort way is false, sort the data by score in ascending order
+              sortedData = NotNoneArray.sort(
+                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
+                  // sort the data by score in ascending order
+                  const titleA = a.listing.score;
+                  const titleB = b.listing.score;
+                  if (titleA < titleB) {
+                    return -1;
+                  } else if (titleA > titleB) {
+                    return 1;
+                  } else {
+                    return 0;
+                  }
+                }
+              );
+            }
+            // set the data
+            setSpecificData(sortedData);
+            // set the loading to false
+            setIsLoadings(false);
+          }
+        })
+        .catch((error) => {
+          // if the component is mounted, set the error
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
+          // set the loading to false
+          if (isMounted.current) {
+            setIsLoadings(false);
+          }
+        });
+    }
+  }, [data?.listings]);
+  // initialize the content
+  let content;
+  // if is loading, show the loading
+  if (isLoadings) {
+    // loading
+    content = <NullListing>All listing is comming...</NullListing>;
+  } else if (SpecificDatas) {
+    // if specific data is not null, show the data and the number of data larger than 0
+    if (SpecificDatas.length > 0) {
+      // show the data
+      content = SpecificDatas.map((item) => (
+        <PublicListing
+          key={item.listing.id}
+          onClick={() => {
+            DetailLooking(item.listing.id);
+          }}
+        >
+          <IMGcontainer>
+            <PublicListingImg src={item.listing.thumbnail}></PublicListingImg>
+          </IMGcontainer>
+          <PublicBottom>
+            <PublicListingTitle>{item.listing.title}</PublicListingTitle>
+            <PublicReview>
+              <Publicstar src='/img/star.png'></Publicstar>
+              <PublicreviewRating>
+                {String(item.listing.score.toFixed(2))}
+              </PublicreviewRating>
+              <Publicstar src='/img/Guest.png'></Publicstar>
+              <PublicreviewRating>
+                {String(item.listing.reviews.length)}
+              </PublicreviewRating>
+            </PublicReview>
+          </PublicBottom>
+          <PublicDate>
+            {dayjs(item.listing.availability[0]?.startDate).format(
+              'MM/DD/YYYY'
+            ) +
+              '—' +
+              dayjs(item.listing.availability[0]?.endDate).format('MM/DD/YYYY')}
+          </PublicDate>
+          <Publicprice>${item.listing.price} AUD</Publicprice>
+        </PublicListing>
+      ));
+    } else {
+      content = <NullListing>Seems there not exist any listing</NullListing>;
+    }
+  } else {
+    // if the data is null, show the hint
+    content = <NullListing>Seems there not exist any listing</NullListing>;
+  }
+  return token ? <ListingContentdiv>{content}</ListingContentdiv> : null;
+};
+// this is the page for owner to see all the listing
+export const GetAllListing = () => {
+  // get the error context
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
+  // use the navigate to jump to the other page
+  const navigate = useNavigate();
+  // get the app context
+  const FilterValue = useContext(AppContext);
+  if (!FilterValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  // inital the data from the context
+  const {
+    MinPrice,
+    MaxPrice,
+    Checkin,
+    Checkout,
+    MinBed,
+    MaxBed,
+    sortWay,
+    searchcontent,
+  } = FilterValue;
+  //  initialize a state to store the data from the backend
+  const [data, setData] = useState<ApiResponse>();
+  // initialize a state to store the data from the backend
+  const [allmybooking, setallmybooking] = useState<string[]>(['-']);
+  // initialize a state to store the data from the backend
+  const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]);
+  // initialize a state to check if the data is loading
+  const [isLoading, setIsLoading] = useState(true);
+  // use ref to check if the component is mounted
+  const isMounted = useRef(true);
+  // when the button is clicked, go to the detail page
+  const DetailLooking = (HostingID: string) => {
+    // get the user id from the local storage
+    const userId = localStorage.getItem('LoggedUserEmail');
+    // if the token is not null, go to the detail page
+    if (localStorage.token) {
+      navigate(`/user/${userId}/listing/${HostingID}/logged`);
+    } else {
+      navigate(`/listing/${HostingID}`);
+    }
+  };
+  // when the component is unmounted, cancel the async function
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  // when the component is mounted, get the data from the backend
+  useEffect(() => {
+    // get the token from the local storage
+    const token = localStorage.getItem('token');
+    // if the token is null, return
+    if (!token) {
+      setallmybooking([]);
+      return;
+    }
+    // fetch the data from the backend
+    callAPIget('bookings', token)
+      .then((response) => {
+        // if the component is mounted, set the data
+        console.log(response);
+        if (isMounted.current) {
+          // set the data
+          const theResponse = response as AllBookings;
+          // filter the data with the booking is the owner and the status is not declined
+          const ownerData = theResponse.bookings.filter((items) => {
+            return (
+              items.owner === localStorage.getItem('LoggedUserEmail') &&
+              items.status !== 'declined'
+            );
+          });
+          // inital the allid array
+          const Allid: string[] = [];
+          // remove the duplicate id
+          ownerData.forEach((item) => {
+            if (!Allid.includes(String(item.listingId))) {
+              Allid.push(item.listingId);
+            }
+          });
+          // set the data
+          setallmybooking(Allid);
+        }
+      })
+      .catch((error) => {
+        // if the component is mounted, set the error
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        // if the component is mounted, set the error
+        setIsLoading(false);
+      });
+  }, [localStorage.getItem('token')]);
+  // when the component is mounted, get the data from the backend
+  useEffect(() => {
+    callAPIget('listings', '')
+      .then((response) => {
+        // set the min price and max price
+        const Minp = MinPrice || 1;
+        const Maxp = MaxPrice || 99999;
+        // if the component is mounted, set the data
+        if (isMounted.current) {
+          // set the data
+          const theResponse = response as ApiResponse;
+          const ownerData = theResponse.listings;
+          // filter the data with the price and the search content
+          const filterdata = ownerData.filter((item): item is ListingOver => {
+            const address = item.address;
+            const totalAddress = `${address.Street}, ${address.City}, ${address.State}, ${address.Postcode}, ${address.Country}`;
+            return (
+              item !== null &&
+              allmybooking.includes(String(item.id)) === false &&
+              Number(item.price) <= Maxp &&
+              Number(item.price) >= Minp &&
+              (item.title.includes(searchcontent) ||
+                totalAddress.includes(searchcontent))
+            );
+          });
+          // set the data
+          setData({ listings: filterdata });
+        }
+      })
+      .catch((error) => {
+        // if the component is mounted, set the error
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        // if the component is mounted, set the error
+        setIsLoading(false);
+      });
+  }, [allmybooking]);
+  // when the component is mounted, get the data from the backend
+  useEffect(() => {
+    // if the data is not null, get the specific data
+    if (data && data.listings) {
+      // get the specific data
+      const promises = data.listings.map((item) => {
+        // get the current data
+        const token = localStorage.getItem('token') || '';
+        return callAPIget('listings/' + item.id, token)
+          .then((response) => {
+            // for each data, get the id score and reviews
+            const r = response as ApiResponseSpecific;
+            r.listing.id = String(item.id);
+            const scor = r.listing.reviews;
+            // calculate the average score
+            if (scor.length > 0) {
+              const sum = scor.reduce(
+                (accumulator, item) => accumulator + item.score,
+                0
+              );
+              const average = sum / scor.length;
+              // set the score
+              r.listing.score = average;
+            } else {
+              // if the score is null, set the score to 0
+              r.listing.score = 0;
+            }
+            return r;
+          })
+          .catch((error) => {
+            // if the component is mounted, set the error
+            setOpenSnackbar({
+              severity: 'error',
+              message: meetError(error),
+            });
+            setOpenSnackbar({
+              severity: 'error',
+              message: '',
+            });
+            // return null because of the error
+            return null;
+          });
+      });
+      // when all the promises are resolved, set the data
+      Promise.all(promises)
+        .then((specificDataArray) => {
+          // get the min and max bed
+          const MinB = MinBed || 1;
+          const MaxB = MaxBed || 99999;
+          if (isMounted.current) {
+            // filter the null value and the published value is true and the bed is in the range
+            let NotNoneArray = specificDataArray.filter(
+              (item): item is ApiResponseSpecific =>
+                item !== null &&
+                item.listing.published === true &&
+                Number(item.listing.metadata.bedInfo.Bedrooms) <= MaxB &&
+                Number(item.listing.metadata.bedInfo.Bedrooms) >= MinB
+            );
+            // filter the data with the checkin and checkout
+            if (Checkin && Checkout) {
+              // filter the data with the checkin and checkout
+              // if exist a daterange is available, then return the true
+              NotNoneArray = NotNoneArray.filter(
+                (item): item is ApiResponseSpecific => {
+                  return item.listing.availability.some(
+                    (items): items is availdata => {
+                      return (
+                        dayjs(items.startDate) <= dayjs(Checkin) &&
+                        dayjs(items.endDate) >= dayjs(Checkout)
+                      );
+                    }
+                  );
+                }
+              );
+            } else if (Checkin) {
+              // if only exist the checkin, then filter the data with the checkin
+              // if exist a daterange is available, then return the true
+              NotNoneArray = NotNoneArray.filter(
+                (item): item is ApiResponseSpecific =>
+                  item.listing.availability.some(
+                    (items): items is availdata => {
+                      return (
+                        dayjs(items.startDate) <= dayjs(Checkin) &&
+                        dayjs(Checkin) <= dayjs(items.endDate)
+                      );
+                    }
+                  )
+              );
+            } else if (Checkout) {
+              // if only exist the checkout, then filter the data with the checkout
+              // if exist a daterange is available, then return the true
+              NotNoneArray = NotNoneArray.filter(
+                (item): item is ApiResponseSpecific =>
+                  item.listing.availability.some(
+                    (items): items is availdata =>
+                      dayjs(items.endDate) >= dayjs(Checkout) &&
+                      dayjs(items.startDate) <= dayjs(Checkout)
+                  )
+              );
+            }
+            // sort the data
+            let sortedData;
+            if (sortWay === null) {
+              // if the sortway is null, then sort the data with the title
+              sortedData = NotNoneArray.sort(
+                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
+                  const titleA = a.listing.title.toLowerCase();
+                  const titleB = b.listing.title.toLowerCase();
+                  // set the order
+                  if (titleA < titleB) {
+                    return -1;
+                  } else if (titleA > titleB) {
+                    return 1;
+                  } else {
+                    return 0;
+                  }
+                }
+              );
+            } else if (sortWay === true) {
+              // if the sortway is true, then sort the data with the score in descending order
+              sortedData = NotNoneArray.sort(
+                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
+                  const titleA = a.listing.score;
+                  const titleB = b.listing.score;
+                  if (titleA > titleB) {
+                    return -1;
+                  } else if (titleA < titleB) {
+                    return 1;
+                  } else {
+                    return 0;
+                  }
+                }
+              );
+            } else {
+              // if the sortway is false, then sort the data with the score in ascending order
+              sortedData = NotNoneArray.sort(
+                (a: ApiResponseSpecific, b: ApiResponseSpecific) => {
+                  const titleA = a.listing.score;
+                  const titleB = b.listing.score;
+                  if (titleA < titleB) {
+                    return -1;
+                  } else if (titleA > titleB) {
+                    return 1;
+                  } else {
+                    return 0;
+                  }
+                }
+              );
+            }
+            // set the data
+            setSpecificData(sortedData);
+            // set the loading to false
+            setIsLoading(false);
+          }
+        })
+        .catch((error) => {
+          // if the component is mounted, set the error
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
+          // set the loading to false
+          if (isMounted.current) {
+            setIsLoading(false);
+          }
+        });
+    }
+  }, [data?.listings]);
+  // initialize the content
+  let content;
+  // if the data is loading, show the loading
+  if (isLoading) {
+    // if the data is loading, show the loading
+    content = <NullListing>All listing is comming...</NullListing>;
+  } else if (SpecificDatas) {
+    // if the data is not loading, show the data
+    if (SpecificDatas.length > 0) {
+      // if the data is loaded and not empty, render the data
+      content = SpecificDatas.map((item) => (
+        <PublicListing
+          key={item.listing.id}
+          onClick={() => {
+            DetailLooking(item.listing.id);
+          }}
+        >
+          <IMGcontainer>
+            <PublicListingImg src={item.listing.thumbnail}></PublicListingImg>
+          </IMGcontainer>
+          <PublicBottom>
+            <PublicListingTitle>{item.listing.title}</PublicListingTitle>
+            <PublicReview>
+              <Publicstar src='/img/star.png'></Publicstar>
+              <PublicreviewRating>
+                {String(item.listing.score.toFixed(2))}
+              </PublicreviewRating>
+              <Publicstar src='/img/Guest.png'></Publicstar>
+              <PublicreviewRating>
+                {String(item.listing.reviews.length)}
+              </PublicreviewRating>
+            </PublicReview>
+          </PublicBottom>
+          <PublicDate>
+            {dayjs(item.listing.availability[0]?.startDate).format(
+              'MM/DD/YYYY'
+            ) +
+              '—' +
+              dayjs(item.listing.availability[0]?.endDate).format('MM/DD/YYYY')}
+          </PublicDate>
+          <Publicprice>${item.listing.price} AUD</Publicprice>
+        </PublicListing>
+      ));
+    } else {
+      // if the data is loaded and empty, render the empty
+      content = <NullListing>Seems there not exist any listing</NullListing>;
+    }
+  } else {
+    // if the data is loaded and empty, render the empty
+    content = <NullListing>Seems there not exist any listing</NullListing>;
+  }
+  return <ListingContentdiv>{content}</ListingContentdiv>;
+};
+// this is the page for the hoster to see all the listing they have
+export const GetAllOwnerListing = () => {
+  // get the context
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
+  // initialize the state to store the data from backend
+  const [data, setData] = useState<ApiResponse>();
+  const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  // use ref to track the component is mounted or not
+  const isMounted = useRef(true);
+  // initialize the state to control the useeffect re-render
+  const [eff1, seteff1] = useState(true);
+  const [eff2, seteff2] = useState(true);
+  // use navigate to redirect the page
+  const navigate = useNavigate();
+  // use the useeffect to get the data from backend
+  useEffect(() => {
+    // when the component is unmounted, cancel the async function
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    // when the component is mounted, get the data from backend
+    callAPIget('listings', '')
+      .then((response) => {
+        // if the component is mounted, set the data
+        if (isMounted.current) {
+          // set the data
+          const theResponse = response as ApiResponse;
+          // filter the data with the owner
+          const ownerData = theResponse.listings.filter((items) => {
+            return items.owner === localStorage.getItem('LoggedUserEmail');
+          });
+          // set the data
+          setData({ listings: ownerData });
+          // open the eff2 to re-render the component
+          seteff2(!eff2);
+        }
+      })
+      .catch((error) => {
+        // if the component is mounted, set the error
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        // if mistake happens, set the loading to false
+        setIsLoading(false);
+      });
+  }, [eff1]);
+  // use the useeffect to get the data from backend
+  useEffect(() => {
+    // if the data is not empty, get the specific data
+    if (data && data.listings) {
+      console.log(data);
+      // open a promise all to get the specific data
+      const promises = data.listings.map((item) => {
+        console.log(item);
+        // get the token
+        const token = localStorage.getItem('token') || '';
+        // get the specific data
+        return callAPIget('listings/' + item.id, token)
+          .then((response) => {
+            // set the data and set the id and average score
+            const r = response as ApiResponseSpecific;
+            r.listing.id = String(item.id);
+            const scor = r.listing.reviews;
+            // calculate the average score
+            if (scor.length > 0) {
+              const sum = scor.reduce(
+                (accumulator, item) => accumulator + item.score,
+                0
+              );
+              const average = sum / scor.length;
+              r.listing.score = average;
+            } else {
+              // if there is no review, set the score to 0
+              r.listing.score = 0;
+            }
+            return r;
+          })
+          .catch((error) => {
+            // if the component is mounted, set the error
+            setOpenSnackbar({
+              severity: 'error',
+              message: meetError(error),
+            });
+            setOpenSnackbar({
+              severity: 'error',
+              message: '',
+            });
+            // if mistake happens, return null
+            return null;
+          });
+      });
+      // open a promise all to get the specific data
+      Promise.all(promises)
+        .then((specificDataArray) => {
+          // if the component is mounted, set the data
+          console.log(specificDataArray);
+          if (isMounted.current) {
+            // filter the null value
+            const filteredSpecificDataArray = specificDataArray.filter(
+              (item): item is ApiResponseSpecific => item !== null
+            );
+            // setspecific data
+            setSpecificData(filteredSpecificDataArray);
+            setIsLoading(false);
+          }
+        })
+        .catch((error) => {
+          // when the component is mounted, set the error
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
+          // set the loading to false
+          if (isMounted.current) {
+            setIsLoading(false);
+          }
+        });
+    }
+  }, [data?.listings]);
+  // when the button is clicked, redirect to the edit page
+  const EditHosting = (HostingID: string) => {
+    const userId = localStorage.getItem('LoggedUserEmail');
+    if (localStorage.token) {
+      navigate(`/user/${userId}/hosting/edit/${HostingID}`);
+    } else {
+      navigate('/login');
+    }
+  };
+  // delete the hosting when the button is clicked
+  const DeleteHosting = (HostingID: string) => {
+    const token = localStorage.getItem('token') || '';
+    // call the delete api
+    callAPIdelete('listings/' + HostingID, token)
+      .then(() => {
+        // set the open snackbar
+        setOpenSnackbar({
+          severity: 'success',
+          message: 'Your hosting has been Deleted !',
+        });
+        // set the open snackbar
+        setOpenSnackbar({
+          severity: 'success',
+          message: '',
+        });
+        // re-render the component
+        seteff1(!eff1);
+      })
+      .catch((error) => {
+        // set the open snackbar
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        // set the open snackbar
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+      });
+  };
+  // when the button is clicked, redirect to the publish page
+  const PublishHosting = (HostingID: string) => {
+    const userId = localStorage.getItem('LoggedUserEmail');
+    if (localStorage.token) {
+      navigate(`/user/${userId}/hosting/publish/${HostingID}`);
+    } else {
+      navigate('/login');
+    }
+  };
+  // when the button is clicked, unpublish the hosting
+  const unPublishHosting = (HostingID: string) => {
+    // call the backend api
+    const token = localStorage.getItem('token') || '';
+    callAPIput('listings/unpublish/' + HostingID, {}, token)
+      .then(() => {
+        // when success, set the open snackbar
+        setOpenSnackbar({
+          severity: 'success',
+          message: 'Your hosting has been successfully downgraded !',
+        });
+        setOpenSnackbar({
+          severity: 'success',
+          message: '',
+        });
+        // rerender the component
+        seteff1(!eff1);
+      })
+      .catch((error) => {
+        // when error, set the open snackbar
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+      });
+  };
+  // initialize the content
+  let content;
+  if (isLoading) {
+    // if the data is loading, show the loading information
+    content = <NullListing>Data is comming...</NullListing>;
+  } else if (SpecificDatas) {
+    if (SpecificDatas.length > 0) {
+      // if the data is loaded and not empty, render the data
+      content = SpecificDatas.map((item, index) => (
+        <ListingRow key={index}>
+          <LeftPart>
+            <SmallListingImage src={item.listing.thumbnail}></SmallListingImage>
+            <ListingInfo>
+              <ListingType>{item.listing.metadata.type}</ListingType>
+              <ListingTitle>{item.listing.title}</ListingTitle>
+              <GuestInfo>
+                <LogoPath src='/img/bath.png'></LogoPath>
+                <ListingGuest>
+                  {item.listing.metadata.bedInfo.Bathrooms}
+                </ListingGuest>
+                <LogoPath src='/img/bed.png'></LogoPath>
+                <ListingGuest>
+                  {item.listing.metadata.bedInfo.Beds}
+                </ListingGuest>
+              </GuestInfo>
+              <ListingPrice>${item.listing.price} AUD</ListingPrice>
+              <ReviewPart>
+                <ReviewBlock>
+                  <Publicstar src='/img/star.png'></Publicstar>
+                  <PublicreviewRating>
+                    {String(item.listing.score.toFixed(2))}
+                  </PublicreviewRating>
+                </ReviewBlock>
+                <ReviewBlock>
+                  <Publicstar src='/img/profile.png'></Publicstar>
+                  <PublicreviewRating>
+                    {item.listing.reviews.length}
+                  </PublicreviewRating>
+                </ReviewBlock>
+              </ReviewPart>
+            </ListingInfo>
+          </LeftPart>
+          <RightButton>
+            <ListingBtn
+              onClick={() => {
+                if (item.listing.published) {
+                  unPublishHosting(String(data?.listings[index]?.id));
+                } else {
+                  PublishHosting(String(data?.listings[index]?.id));
+                }
+              }}
+            >
+              {item.listing.published ? 'UnPublish' : 'Publish'}
+            </ListingBtn>
+            <ListingBtn
+              onClick={() => {
+                EditHosting(String(data?.listings[index]?.id));
+              }}
+            >
+              Edit
+            </ListingBtn>
+            <ListingBtn
+              onClick={() => {
+                DeleteHosting(String(data?.listings[index]?.id));
+              }}
+            >
+              Delete
+            </ListingBtn>
+            {/* <ListingBtn>Delete</ListingBtn> */}
+          </RightButton>
+        </ListingRow>
+      ));
+    } else {
+      // if the data is loaded and empty, show the empty information
+      content = <NullListing>Seems there not exist any listing</NullListing>;
+    }
+  } else {
+    // if the data is empty, show the empty information
+    content = <NullListing>Seems there not exist any listing</NullListing>;
+  }
+
+  return <ListingContentOwner>{content}</ListingContentOwner>;
+};
+// this is the page for the owner to see all the bookings
+export const GetAllOwnerBooking = () => {
+  // get the error context
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  // get the setOpenSnackbar function
+  const { setOpenSnackbar } = ErrorValue;
+  // initialize a state to store the data from backend
+  const [data, setData] = useState<AllBookings>();
+  const [SpecificDatas, setSpecificData] = useState<BookingContent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  // use ref to track whether the component is still mounted
+  const isMounted = useRef(true);
+  const navigate = useNavigate();
+  // when the button clicked, redirect to the detail page
+  const showDetail = (index: number) => {
+    const HostingId = SpecificDatas[index]?.id;
+    if (HostingId) {
+      const userId = localStorage.getItem('LoggedUserEmail');
+      if (localStorage.token) {
+        navigate(`/user/${userId}/listing/${HostingId}/logged`);
+      }
+    }
+  };
+  // when the button is clicked, goes to the review page
+  const GoesReview = (index: number) => {
+    // get the hosting id and booking id
+    const HostingId = SpecificDatas[index]?.id;
+    const BookingId = SpecificDatas[index]?.bookingid || '';
+    localStorage.setItem('BookingId', BookingId);
+    // if the user is logged in, redirect to the review page
+    if (HostingId) {
+      const userId = localStorage.getItem('LoggedUserEmail');
+      if (localStorage.token) {
+        navigate(`/user/${userId}/listing/${HostingId}/logged/review`);
+      } else {
+        navigate('/login');
+      }
+    }
+  };
+  useEffect(() => {
+    // cancel the unfinished async function when the component unmounted
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    // when the component mounted, get the data from backend in the appropriate lifecycle or other
+    const token = localStorage.getItem('token') || '';
+    callAPIget('bookings', token)
+      .then((response) => {
+        console.log(response);
+        if (isMounted.current) {
+          const theResponse = response as AllBookings;
+          // filter the data to get the data that the owner is related to and status is not declined
+          const ownerData = theResponse.bookings.filter((items) => {
+            return (
+              items.owner === localStorage.getItem('LoggedUserEmail') &&
+              items.status !== 'declined'
+            );
+          });
+          // set the data to the state
+          setData({ bookings: ownerData });
         }
       })
       .catch((error) => {
@@ -1344,28 +1665,463 @@ export const GetAllBookingRequest = () => {
           severity: 'error',
           message: '',
         });
-        setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
+        // if error happens, we also need to set isLoading to false
+        setIsLoading(false);
       });
-  }, [hooktoupdate]);
-  const token = localStorage.getItem('token') || '';
-  const RequestAccept = (id: string) => {
-    callAPIput('bookings/accept/' + String(id), {}, token)
-      .then(() => {
-        setOpenSnackbar({
-          severity: 'info',
-          message: 'You accepted a booking.',
+  }, []);
+
+  useEffect(() => {
+    if (data && data.bookings) {
+      // if the data is loaded and not empty, show the data
+      const promises = data.bookings.map((item) => {
+        // get the token
+        const token = localStorage.getItem('token') || '';
+        return callAPIget('listings/' + item.listingId, token)
+          .then((response) => {
+            const r = response as ApiResponseSpecific;
+            // set the id and bookingid and dateRange and totalPrice and status
+            const result = r.listing as BookingContent;
+            result.id = String(item.listingId);
+            result.bookingid = String(item.id);
+            result.dateRange = item.dateRange;
+            result.totalPrice = item.totalPrice;
+            result.status = item.status;
+            return result;
+          })
+          .catch((error) => {
+            // show the error message
+            setOpenSnackbar({
+              severity: 'error',
+              message: meetError(error),
+            });
+            setOpenSnackbar({
+              severity: 'error',
+              message: '',
+            });
+            // return null if there is an error
+            return null;
+          });
+      });
+      Promise.all(promises)
+        .then((specificDataArray) => {
+          if (isMounted.current) {
+            // filter out the null values
+            const filteredSpecificDataArray = specificDataArray.filter(
+              (item): item is BookingContent =>
+                item !== null && item.published === true
+            );
+            // set the result to the state
+            setSpecificData(filteredSpecificDataArray);
+            // set the loading state to false
+            setIsLoading(false);
+          }
+        })
+        .catch((error) => {
+          // show the error message
+          setOpenSnackbar({
+            severity: 'error',
+            message: meetError(error),
+          });
+          setOpenSnackbar({
+            severity: 'error',
+            message: '',
+          });
+          if (isMounted.current) {
+            setIsLoading(false);
+          }
         });
-        setOpenSnackbar({
-          severity: 'info',
-          message: '',
-        });
-        sethook(!hooktoupdate);
+    }
+  }, [data]);
+  let content;
+  if (isLoading) {
+    // if the data is loading, show the loading information
+    content = <NullListing>Data is comming...</NullListing>;
+  } else if (SpecificDatas) {
+    if (SpecificDatas.length > 0) {
+      // if the data is loaded and not empty, render the data
+      content = SpecificDatas.map((item, index) => (
+        <ListingRow key={index}>
+          <LeftPart
+            onClick={() => {
+              showDetail(index);
+            }}
+          >
+            <SmallListingImage src={item.thumbnail}></SmallListingImage>
+            <ListingInfo>
+              <ListingType>{item.metadata.type}</ListingType>
+              <DateRange>
+                {dayjs(item.dateRange.startDate).format('MM/DD/YYYY') +
+                  ' - ' +
+                  dayjs(item.dateRange.endDate).format('MM/DD/YYYY')}
+              </DateRange>
+              <GuestInfo>
+                <LogoPath src='/img/bath.png'></LogoPath>
+                <ListingGuest>{item.metadata.bedInfo.Bathrooms}</ListingGuest>
+                <LogoPath src='/img/bed.png'></LogoPath>
+                <ListingGuest>{item.metadata.bedInfo.Beds}</ListingGuest>
+              </GuestInfo>
+              <ListingPrice>${item.totalPrice.toFixed(2)} AUD</ListingPrice>
+            </ListingInfo>
+          </LeftPart>
+          <RightButton>
+            <ReviewBlock>
+              <Pstatus>
+                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+              </Pstatus>
+            </ReviewBlock>
+            <ListingBtn
+              onClick={() => {
+                GoesReview(index);
+              }}
+              disabled={item.status === 'pending'}
+            >
+              Review
+            </ListingBtn>
+            {/* <ListingBtn>Delete</ListingBtn> */}
+          </RightButton>
+        </ListingRow>
+      ));
+    } else {
+      // if there is no data, show a message
+      content = <NullListing>There are no eligible orders.</NullListing>;
+    }
+  } else {
+    // if data is empty, show a message
+    content = <NullListing>There are no eligible orders.</NullListing>;
+  }
+
+  return <BookingContentOwner>{content}</BookingContentOwner>;
+};
+// this is the page for the owner to see all the booking for a specific listing
+export const GetAllOwnerBookingListing = () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return null;
+  }
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
+  // set the state for the datas
+  const { HostingId } = useParams();
+  const [data, setData] = useState<AllBookings>();
+  const [isLoading, setIsLoading] = useState(true);
+  // use ref to track whether the component is still mounted
+  const isMounted = useRef(true);
+  // use the navigate hook
+  const navigate = useNavigate();
+  // when this button is clicked, it will go to the review page
+  const GoesReview = (index: number) => {
+    // ge1t the booking id
+    const BookingId = data?.bookings[index]?.id || '';
+    // set the booking id to the local storage
+    localStorage.setItem('BookingId', BookingId);
+    // get the hosting id
+    if (HostingId) {
+      // get the user id
+      const userId = localStorage.getItem('LoggedUserEmail');
+      // if the user is logged in, go to the review page
+      if (localStorage.token) {
+        navigate(`/user/${userId}/listing/${HostingId}/logged/review`);
+      } else {
+        navigate('/login');
+      }
+    }
+  };
+  // use the effect hook to determine whether the component is mounted
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  // when the component is mounted, get the data from the backend
+  useEffect(() => {
+    // get the token
+    const token = localStorage.getItem('token') || '';
+    // if the token is empty, return null
+    callAPIget('bookings', token)
+    // if the token is not empty, get the data from the backend
+      .then((response) => {
+        // log the response
+        console.log(response);
+        // if the component is mounted, set the data to the state
+        if (isMounted.current) {
+          // set the data to the state
+          const theResponse = response as AllBookings;
+          // filter out the data that is not related to the current user
+          const ownerData = theResponse.bookings.filter((items) => {
+            return (
+              items.owner === localStorage.getItem('LoggedUserEmail') &&
+              items.listingId === HostingId
+            );
+          });
+          // set the data to the state
+          setData({ bookings: ownerData });
+          // if the data is loaded, set the loading to false
+          setIsLoading(false);
+        }
       })
       .catch((error) => {
+        // if there is an error, log the error
         setOpenSnackbar({
           severity: 'error',
           message: meetError(error),
         });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        // if some error happens, set the loading to false
+        setIsLoading(false);
+      });
+  }, [localStorage.getItem('NewBooking')]);
+  // initialize the content
+  let content;
+  // if the data is loading, show the loading message
+  if (isLoading) {
+    // if the data is loading, show the loading message
+    content = <NullListing>Data is comming...</NullListing>;
+  } else if (data) {
+    // if the data is not empty, show the data
+    if (data.bookings.length > 0) {
+      content = data.bookings.map((item, index) => (
+        <ListingRowInDetail key={index}>
+          <LeftPart>
+            <ListingInfo>
+              <ListingType>Your order</ListingType>
+              <DateRange>Order id: {item.id}</DateRange>
+              <DateRange>
+                {dayjs(item.dateRange.startDate).format('MM/DD/YYYY') +
+                  ' - ' +
+                  dayjs(item.dateRange.endDate).format('MM/DD/YYYY')}
+              </DateRange>
+              <ListingPrice>${item.totalPrice.toFixed(2)} AUD</ListingPrice>
+            </ListingInfo>
+          </LeftPart>
+          <RightButton>
+            <ReviewBlock>
+              <Pstatus>
+                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+              </Pstatus>
+            </ReviewBlock>
+            <ListingBtn
+              onClick={() => {
+                GoesReview(index);
+              }}
+              disabled={item.status === 'pending'}
+            >
+              Review
+            </ListingBtn>
+            {/* <ListingBtn>Delete</ListingBtn> */}
+          </RightButton>
+        </ListingRowInDetail>
+      ));
+    } else {
+      // if there is no data, content is null
+      content = null;
+    }
+  } else {
+    // if the data is empty, content is null
+    // 如果数据为空，显示一个提示
+    content = null;
+  }
+  return <BookingContentOwnerDetails>{content}</BookingContentOwnerDetails>;
+};
+// this is the page for the hoster to see all the booking about their listing
+export const GetAllBookingRequest = () => {
+  // get the error context
+  const ErrorValue = useContext(ErrorContext);
+  if (!ErrorValue) {
+    // Handle the case where contextValue is null (optional)
+    return null;
+  }
+  const { setOpenSnackbar } = ErrorValue;
+  // Specify the state for the datas
+  const [SpecificDatas, setSpecificData] = useState<BookingContent[]>([]);
+  // if the data is loading, show the loading message
+  const [isLoading, setIsLoading] = useState(true);
+  // use this to set the page refresh
+  const [hooktoupdate, sethook] = useState(false);
+  // use ref to track whether the component is still mounted
+  const isMounted = useRef(true);
+  // 在组件卸载时取消未完成的异步操作
+  // when the component is unmounted, cancel the async function
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  // when the component is mounted, get the data from the backend
+  useEffect(() => {
+    // if the token is empty, return null
+    const token = localStorage.getItem('token') || '';
+    // Step 1
+    // get the data from the backend
+    callAPIget('bookings', token)
+      .then((response) => {
+        // if the component is mounted, set the data to the state
+        if (isMounted.current) {
+          // get all booking
+          const AllBoooking = response as AllBookings;
+          // filter out the data that the status is pending
+          AllBoooking.bookings = AllBoooking.bookings.filter(
+            (item) => item.status === 'pending'
+          );
+          // Step2
+          // get all the listing that the user owned
+          callAPIget('listings', '')
+            .then((response) => {
+              // if the component is mounted, set the data to the state
+              if (isMounted.current) {
+                // get all the listing
+                const theResponse = response as ApiResponse;
+                // filter out the listing that the user owned
+                const ownerData = theResponse.listings.filter((items) => {
+                  return (
+                    items.owner === localStorage.getItem('LoggedUserEmail')
+                  );
+                });
+                // initialize the array
+                const ALLmylisting: string[] = [];
+                // just get the id of the listing
+                ownerData.forEach((item) => {
+                  ALLmylisting.push(String(item.id));
+                });
+                // step 3
+                // get the listing that the user owned and the booking is pending
+                if (AllBoooking && ALLmylisting) {
+                  console.log(ALLmylisting);
+                  // filter out the booking that the user owned and the booking is pending
+                  const fillteredBooking: Booking[] =
+                    AllBoooking.bookings.filter((item) => {
+                      return ALLmylisting.includes(String(item.listingId));
+                    });
+                  // start a promise to get the specific data
+                  // for each booking, get the specific data
+                  const promises = fillteredBooking.map((item) => {
+                    const token = localStorage.getItem('token') || '';
+                    return callAPIget('listings/' + item.listingId, token)
+                      .then((response) => {
+                        // if the component is mounted, set the data to the state
+                        const r = response as ApiResponseSpecific;
+                        const result = r.listing as BookingContent;
+                        // set the id and the date range and the total price and the status and the owner
+                        // to the result
+                        result.id = String(item.id);
+                        result.dateRange = item.dateRange;
+                        result.totalPrice = item.totalPrice;
+                        result.status = item.status;
+                        result.owner = item.owner;
+                        // return the result
+                        return result;
+                      })
+                      .catch((error) => {
+                        // if the component is mounted, set the data to the state
+                        setOpenSnackbar({
+                          severity: 'error',
+                          message: meetError(error),
+                        });
+                        // set the data to null
+                        setOpenSnackbar({
+                          severity: 'error',
+                          message: '',
+                        });
+                        // because have error, return null
+                        return null;
+                      });
+                  });
+                  // when all the promise is done, set the data to the state
+                  Promise.all(promises)
+                    .then((specificDataArray) => {
+                      // if the component is mounted, set the data to the state
+                      if (isMounted.current) {
+                        // filter out the null value
+                        const filteredSpecificDataArray =
+                          specificDataArray.filter(
+                            (item): item is BookingContent => item !== null
+                          );
+                        // set the data to the state
+                        setSpecificData(filteredSpecificDataArray);
+                        // set the loading to false
+                        setIsLoading(false);
+                      }
+                    })
+                    .catch((error) => {
+                      // if the component is mounted, set the data to the state
+                      setOpenSnackbar({
+                        severity: 'error',
+                        message: meetError(error),
+                      });
+                      setOpenSnackbar({
+                        severity: 'error',
+                        message: '',
+                      });
+                      // set the loading to false
+                      if (isMounted.current) {
+                        setIsLoading(false);
+                      }
+                    });
+                }
+              }
+            })
+            .catch((error) => {
+              // if the component is mounted, set the data to the state
+              setOpenSnackbar({
+                severity: 'error',
+                message: meetError(error),
+              });
+              setOpenSnackbar({
+                severity: 'error',
+                message: '',
+              });
+              // if the mistake happened, set the loading to false
+              setIsLoading(false);
+            });
+        }
+      })
+      .catch((error) => {
+        // if the component is mounted, set the data to the state
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        // if the mistake happened, set the loading to false
+        setIsLoading(false);
+      });
+  }, [hooktoupdate]);
+  // get the token
+  const token = localStorage.getItem('token') || '';
+  // accept the request
+  const RequestAccept = (id: string) => {
+    // call the backend
+    callAPIput('bookings/accept/' + String(id), {}, token)
+      .then(() => {
+        // show the message
+        setOpenSnackbar({
+          severity: 'info',
+          message: 'You accepted a booking.',
+        });
+        // show the message
+        setOpenSnackbar({
+          severity: 'info',
+          message: '',
+        });
+        // update the data
+        sethook(!hooktoupdate);
+      })
+      .catch((error) => {
+        // show the message
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
+        });
+        // show the message
         setOpenSnackbar({
           severity: 'error',
           message: '',
@@ -1373,39 +2129,48 @@ export const GetAllBookingRequest = () => {
       });
   };
   const RequestReject = (id: string) => {
+    // call the backend
     callAPIput('bookings/decline/' + String(id), {}, token)
       .then(() => {
+        // show the message
         setOpenSnackbar({
           severity: 'info',
           message: 'You rejecred a booking.',
         });
+        // show the message
         setOpenSnackbar({
           severity: 'info',
           message: '',
         });
+        // update the data
         sethook(!hooktoupdate);
       })
       .catch((error) => {
+        // show the message
         setOpenSnackbar({
           severity: 'error',
           message: meetError(error),
         });
+        // show the message
         setOpenSnackbar({
           severity: 'error',
           message: '',
         });
       });
   };
+  // initialize the content
   let content;
+  // if the data is loading, show the loading
   if (isLoading) {
-    // 如果数据正在加载，显示加载中信息
+    // if the data is loading, show the loading
     content = <NullListing>Data is comming...</NullListing>;
   } else if (SpecificDatas) {
+    // if the data is loaded, show the data
     if (SpecificDatas.length > 0) {
-      // 如果数据已加载并且不为空，渲染数据
+      // if the data is loaded and not empty, show the data
       content = SpecificDatas.map((item) => (
+        // map the data and show the data
         <ReservingRow key={item.id}>
-          {/* 在这里渲染每条数据 */}
           <LeftPart>
             <SmallListingImageReserving
               src={item.thumbnail}
@@ -1465,105 +2230,137 @@ export const GetAllBookingRequest = () => {
 
   return <ReservingOwner>{content}</ReservingOwner>;
 };
-
+// this is the history of all bookings in a specific listing
 export const GetAllOwnerListingSummary = () => {
+  // use the navigate hook
   const navigate = useNavigate();
+  // set the error value
   const ErrorValue = useContext(ErrorContext);
+  // if the error value is null, return null
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
+  // get the setOpenSnackbar
   const { setOpenSnackbar } = ErrorValue;
-  const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]); // 初始化一个状态来存储从后端获取的数据
-  const [isLoading, setIsLoading] = useState(true); // 初始化一个状态来表示数据是否正在加载
-  const isMounted = useRef(true); // 使用 ref 来跟踪组件是否仍然挂载
+  //  initialize a state to store the data from backend
+  const [SpecificDatas, setSpecificData] = useState<ApiResponseSpecific[]>([]);
+  // initialize a state to store the data from backend
+  const [isLoading, setIsLoading] = useState(true);
+  // use the hook to update the data
+  const isMounted = useRef(true);
+  // use the effect when the component is mounted
   useEffect(() => {
-    // 在组件卸载时取消未完成的异步操作
+    // when the component is unmounted, cancel the async function
     return () => {
+      // set the mounted to false
       isMounted.current = false;
     };
   }, []);
+  // use the hook to update the data
   useEffect(() => {
-    // 在组件挂载时或其他适当的生命周期中从后端获取数据
-    // 你可以使用axios、fetch或其他方法来获取数据
+    // when the component is mounted, get the data from backend
     const token = localStorage.getItem('token') || '';
     // Step 1
     callAPIget('bookings', token)
       .then((response) => {
+        // if the component is mounted, set the data
         if (isMounted.current) {
+          // get the data
           const AllBoooking = response as AllBookings;
           // Step2
           callAPIget('listings', '')
             .then((response) => {
+              // if the data is mounted, set the data
               if (isMounted.current) {
+                // get the response
                 const theResponse = response as ApiResponse;
-                // filter
+                // get the owner data filter by the email
                 const ownerData = theResponse.listings.filter((items) => {
                   return (
                     items.owner === localStorage.getItem('LoggedUserEmail')
                   );
                 });
+                // initialize the array to srore the id and number
                 const ALLmylisting: string[] = [];
                 const ALLmyNumber: number[] = [];
+                // get the owner data filter by the email
                 ownerData.forEach((item) => {
+                  // set the total day to 0
                   let totalday = 0;
+                  // get the total day
                   AllBoooking.bookings.forEach((items) => {
+                    // if the listing id is the same, add the total day
                     if (items.listingId === String(item.id)) {
                       totalday += items.dateRange.distance;
                     }
                   });
+                  // push the data to the array
                   ALLmyNumber.push(totalday);
+                  // push the id to the array
                   ALLmylisting.push(String(item.id));
                 });
-                // step 3
+                // set all the data
                 if (AllBoooking && ALLmylisting && ALLmyNumber) {
                   console.log(ALLmylisting);
+                  // filter the listing
                   const fillteredListing: string[] = ALLmylisting;
+                  // for all the listing, get the data
                   const promises = fillteredListing.map((item, index) => {
+                    // get the token
                     const token = localStorage.getItem('token') || '';
+                    // call the api to get the data
                     return callAPIget('listings/' + item, token)
                       .then((response) => {
+                        // get the response
                         const r = response as ApiResponseSpecific;
-                        console.log(r);
+                        // set the total day and id to the data
                         r.listing.totalday = ALLmyNumber[index] || 0;
                         r.listing.id = item;
-                        console.log(r.listing.postedOn);
-                        console.log(new Date());
                         return r;
                       })
                       .catch((error) => {
+                        // show the error message
                         setOpenSnackbar({
                           severity: 'error',
                           message: meetError(error),
                         });
+                        // show the error message
                         setOpenSnackbar({
                           severity: 'error',
                           message: '',
                         });
-                        return null; // 处理错误，返回一个默认值
+                        // return null
+                        return null;
                       });
                   });
+                  // after all the promises, set the data
                   Promise.all(promises)
                     .then((specificDataArray) => {
                       if (isMounted.current) {
-                        // 过滤掉可能为null的值
+                        // filter all the null value
                         const filteredSpecificDataArray =
                           specificDataArray.filter(
                             (item): item is ApiResponseSpecific => item !== null
                           );
+                        // get specific data
                         setSpecificData(filteredSpecificDataArray);
+                        // set the loading to false
                         setIsLoading(false);
                       }
                     })
                     .catch((error) => {
+                      // show the error message
                       setOpenSnackbar({
                         severity: 'error',
                         message: meetError(error),
                       });
+                      // show the error message
                       setOpenSnackbar({
                         severity: 'error',
                         message: '',
                       });
+                      // set the loading to false
                       if (isMounted.current) {
                         setIsLoading(false);
                       }
@@ -1572,46 +2369,57 @@ export const GetAllOwnerListingSummary = () => {
               }
             })
             .catch((error) => {
+              // show the error message
               setOpenSnackbar({
                 severity: 'error',
                 message: meetError(error),
               });
+              // show the error message
               setOpenSnackbar({
                 severity: 'error',
                 message: '',
               });
-              setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
+              // set the loading to false
+              setIsLoading(false);
             });
         }
       })
       .catch((error) => {
+        // show the error message
         setOpenSnackbar({
           severity: 'error',
           message: meetError(error),
         });
+        // show the error message
         setOpenSnackbar({
           severity: 'error',
           message: '',
         });
-        setIsLoading(false); // 如果发生错误，也需要设置isLoading为false
+        // set the loading to false
+        setIsLoading(false);
       });
   }, []);
-  const ShowHistory = (HostingId:number) => {
+  // this function is to show the history of a listing
+  const ShowHistory = (HostingId: number) => {
+    // get the user id
     const userId = localStorage.getItem('LoggedUserEmail');
     console.log(userId);
+    // get the token
     if (localStorage.token) {
       navigate(`/user/${userId}/hosting/myresveration/history/${HostingId}`);
     } else {
       navigate('/login');
     }
   };
+  // this function is to set the content
   let content;
+  // if the data is loading
   if (isLoading) {
-    // 如果数据正在加载，显示加载中信息
+    // show the loading message
     content = <NullListing>Data is comming...</NullListing>;
   } else if (SpecificDatas) {
     if (SpecificDatas.length > 0) {
-      // 如果数据已加载并且不为空，渲染数据
+      // if the data is loaded and not empty, render the data
       content = SpecificDatas.map((item) => (
         <ListingRowR
           key={item.listing.id}
@@ -1619,7 +2427,6 @@ export const GetAllOwnerListingSummary = () => {
             ShowHistory(Number(item.listing.id));
           }}
         >
-          {/* 在这里渲染每条数据 */}
           <LeftPart>
             <SmallListingImage src={item.listing.thumbnail}></SmallListingImage>
             <ListingInfoR>
@@ -1647,12 +2454,13 @@ export const GetAllOwnerListingSummary = () => {
         </ListingRowR>
       ));
     } else {
+      // if the data is loaded and empty, show the message
       content = <NullListing>Seems there not exist any listing</NullListing>;
     }
   } else {
-    // 如果数据为空，显示一个提示
+    // if the data is empty, show the message
     content = <NullListing>Seems there not exist any listing</NullListing>;
   }
-
+  // return the content
   return <ListingContentOwner>{content}</ListingContentOwner>;
 };

@@ -17,11 +17,8 @@ import {
   CreatButton,
   QButton,
 } from './Host';
-import {
-  callAPIget,
-  callAPIput,
-  GetDistance,
-} from './API';
+import { callAPIget, callAPIput, GetDistance } from './API';
+// interface part
 export interface Availability {
   startDate: Date;
   endDate: Date;
@@ -34,27 +31,144 @@ export interface ConfirmCreatProps {
   isOpen: boolean;
   close: () => void;
 }
+const CfmAll = styled('div')({
+  width: '100%',
+  height: '100%',
+  position: 'absolute',
+  zIndex: '3',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+const CfmBack = styled('div')({
+  zIndex: '1',
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'black',
+  opacity: '0.3',
+});
+const CfmContent = styled('div')({
+  position: 'absolute',
+  zIndex: '4',
+  width: '80%',
+  height: '600px',
+  backgroundColor: 'rgb(255, 255, 255)',
+  borderRadius: '10px',
+  boxShadow: '0px 1px 10px 1px rgba(42, 42, 42, 0.5)',
+});
+const CfmHeight = styled('div')({
+  width: '100%',
+  height: '50px',
+  display: 'flex',
+  alignItems: 'center',
+  borderBottom: '1px solid rgb(200, 200, 200)',
+});
+const CfmClose = styled('p')({
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '30px !important',
+  margin: '0px',
+  marginLeft: '10px',
+  cursor: 'pointer',
+  display: 'flex',
+  border: '1px solid black',
+  width: '70px',
+  fontWeight: '500',
+  letterSpacing: '0.2px',
+  backgroundColor: 'rgb(255, 255, 255)',
+  // margin: '20px 0px 10px 0px',
+  padding: '0px 10px 0px 10px',
+  borderRadius: '20px',
+});
+const CfmCenterContent = styled('div')({
+  position: 'relative',
+  fontSize: '20px',
+  margin: '0px',
+  padding: '0px 0px 0px 0px',
+  height: '480px',
+  overflowY: 'scroll',
+  textAlign: 'center',
+  color: 'rgb(0, 0, 0)',
+});
+const CfmRow = styled('div')({
+  '@media (max-width: 640px)': {
+    flexDirection: 'column',
+  },
+  '@media (min-width: 640px)': {
+    flexDirection: 'row',
+  },
+  display: 'flex',
+  justifyContent: 'space-between',
+  margin: '20px 10% 0px 10%',
+  borderBottom: '1px solid rgb(220, 220, 220)',
+});
+const CfmI = styled('div')({
+  display: 'flex',
+});
+const CfmLefttxt = styled('p')({
+  textAlign: 'left',
+  margin: '0px',
+  marginBottom: '10px',
+  fontSize: '15px',
+  color: 'rgb(42, 42, 42)',
+});
+const CfmRightttxt = styled('p')({
+  textAlign: 'left',
+  margin: '0px 10px 10px 10px',
+  fontSize: '14px',
+  color: 'rgb(85, 85, 85)',
+  maxWidth: '100%',
+  wordWrap: 'break-word',
+});
+
+const CfmBottom = styled('div')({
+  width: '100%',
+  display: 'flex',
+  height: '50px',
+  justifyContent: 'center',
+});
+const CfmHead = styled('p')({
+  fontSize: '20px',
+  margin: '20px 60px 0px 0px',
+  width: '100%',
+  height: '50px',
+  textAlign: 'center',
+  letterSpacing: '0.2px',
+  color: 'rgb(48, 48, 48)',
+});
+// this page is for user to confirm the publish
 export const ConfirmPublish: React.FC<ConfirmCreatProps> = ({
   data,
   isOpen,
   close,
 }) => {
+  // get the error context
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
   const { setOpenSnackbar } = ErrorValue;
+  // get the hosting id
   const { HostingId } = useParams();
+  // get the navigate
   const navigate = useNavigate();
+  // when user click the confirm button, it will call the api to publish the hosting
   const PublishHosting = () => {
+    // get the token
     const token = localStorage.getItem('token') || '';
+    // call the api
     callAPIput('listings/publish/' + HostingId, data, token)
       .then(() => {
+        // show the success message
         console.log('success');
+        // close the confirm page
         close();
+        // navigate to the my hosting page
         const userId = localStorage.getItem('LoggedUserEmail');
         navigate(`/user/${userId}/hosting/myhosting`);
+        // show the success message
         setOpenSnackbar({
           severity: 'success',
           message: 'Publish Successfully !',
@@ -65,6 +179,7 @@ export const ConfirmPublish: React.FC<ConfirmCreatProps> = ({
         });
       })
       .catch((error) => {
+        // show the error message
         setOpenSnackbar({
           severity: 'error',
           message: meetError(error),
@@ -75,115 +190,10 @@ export const ConfirmPublish: React.FC<ConfirmCreatProps> = ({
         });
       });
   };
-
+  // initial the component
   let conponment = <div></div>;
   if (isOpen) {
-    const CfmAll = styled('div')({
-      width: '100%',
-      height: '100%',
-      position: 'absolute',
-      zIndex: '3',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    });
-    const CfmBack = styled('div')({
-      zIndex: '1',
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'black',
-      opacity: '0.3',
-    });
-    const CfmContent = styled('div')({
-      position: 'absolute',
-      zIndex: '4',
-      width: '80%',
-      height: '600px',
-      backgroundColor: 'rgb(255, 255, 255)',
-      borderRadius: '10px',
-      boxShadow: '0px 1px 10px 1px rgba(42, 42, 42, 0.5)',
-    });
-    const CfmHeight = styled('div')({
-      width: '100%',
-      height: '50px',
-      display: 'flex',
-      alignItems: 'center',
-      borderBottom: '1px solid rgb(200, 200, 200)',
-    });
-    const CfmClose = styled('p')({
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '30px !important',
-      margin: '0px',
-      marginLeft: '10px',
-      cursor: 'pointer',
-      display: 'flex',
-      border: '1px solid black',
-      width: '70px',
-      fontWeight: '500',
-      letterSpacing: '0.2px',
-      backgroundColor: 'rgb(255, 255, 255)',
-      // margin: '20px 0px 10px 0px',
-      padding: '0px 10px 0px 10px',
-      borderRadius: '20px',
-    });
-    const CfmCenterContent = styled('div')({
-      position: 'relative',
-      fontSize: '20px',
-      margin: '0px',
-      padding: '0px 0px 0px 0px',
-      height: '480px',
-      overflowY: 'scroll',
-      textAlign: 'center',
-      color: 'rgb(0, 0, 0)',
-    });
-    const CfmRow = styled('div')({
-      '@media (max-width: 640px)': {
-        flexDirection: 'column',
-      },
-      '@media (min-width: 640px)': {
-        flexDirection: 'row',
-      },
-      display: 'flex',
-      justifyContent: 'space-between',
-      margin: '20px 10% 0px 10%',
-      borderBottom: '1px solid rgb(220, 220, 220)',
-    });
-    const CfmI = styled('div')({
-      display: 'flex',
-    });
-    const CfmLefttxt = styled('p')({
-      textAlign: 'left',
-      margin: '0px',
-      marginBottom: '10px',
-      fontSize: '15px',
-      color: 'rgb(42, 42, 42)',
-    });
-    const CfmRightttxt = styled('p')({
-      textAlign: 'left',
-      margin: '0px 10px 10px 10px',
-      fontSize: '14px',
-      color: 'rgb(85, 85, 85)',
-      maxWidth: '100%',
-      wordWrap: 'break-word',
-    });
-
-    const CfmBottom = styled('div')({
-      width: '100%',
-      display: 'flex',
-      height: '50px',
-      justifyContent: 'center',
-    });
-    const CfmHead = styled('p')({
-      fontSize: '20px',
-      margin: '20px 60px 0px 0px',
-      width: '100%',
-      height: '50px',
-      textAlign: 'center',
-      letterSpacing: '0.2px',
-      color: 'rgb(48, 48, 48)',
-    });
+    // if the confirm page is open, it will show the confirm page
     console.log(data);
     conponment = (
       <CfmAll>
@@ -216,10 +226,12 @@ export const ConfirmPublish: React.FC<ConfirmCreatProps> = ({
         </CfmContent>
       </CfmAll>
     );
+    // show the data
     console.log(data);
   }
   return isOpen ? conponment : null;
 };
+// interface for the publish page
 interface ListingContent {
   title: string;
   // owner: string;
@@ -255,7 +267,10 @@ interface ListingContent {
   //   content: string;
   // }[];
 }
-
+type ApiResponse = {
+  listing: ListingContent;
+};
+// css part
 const HouseInfo = styled('div')({
   display: 'flex',
   flexDirection: 'column',
@@ -428,8 +443,10 @@ const IntervalContent = styled('div')({
   height: '100%',
 });
 const TimeBlock = styled('div')({
+  display: 'flex',
   width: '50%',
-  minWidth: '250px',
+  justifyContent: 'center',
+  minWidth: '200px',
 });
 const IntervalBottom = styled('div')({
   display: 'flex',
@@ -458,19 +475,19 @@ const ErrorMsg = styled('p')({
   color: 'rgb(255,0,0)',
   fontSize: '14px',
 });
+// css end
+// this is the page for publish a new listing
 export const PublishPage = () => {
+  // get the error context
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
-  const {
-    setOpenSnackbar
-  } = ErrorValue;
-
+  const { setOpenSnackbar } = ErrorValue;
+  // initial all the data for the publish
   const [data, setData] = useState<Availability[]>([]);
   const [isOpen, setOpen] = useState(false);
-  const [Loading, setLoading] = useState(false);
   const { HostingId } = useParams();
   const navigate = useNavigate();
   const [HostingType, setType] = useState('');
@@ -492,65 +509,67 @@ export const PublishPage = () => {
   const [isFreeParkingChecked, setFreeParkingChecked] = useState(false);
   const [isWashingmachineChecked, setWashingmachineChecked] = useState(false);
   const [Title, setTitle] = useState('');
-  // const [AllImaegsString, setSelectedImageString] = useState<string[]>([]);
+  // goes to the host page
   const goesHost = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     navigate(`/user/${userId}/hosting/myhosting`);
   };
-  type ApiResponse = {
-    listing: ListingContent;
-  };
+  // close the confirm dialog
   const close = () => {
     setOpen(false);
   };
+  // loading the data from the specific listing want to publish
   useEffect(() => {
-    if (!Loading) {
-      const token = localStorage.getItem('token') || '';
-      callAPIget('listings/' + HostingId, token)
-        .then((response) => {
-          const Responsedata = response as ApiResponse;
-          console.log(Responsedata.listing);
-          setType(Responsedata.listing.metadata.type);
-          setCountry(Responsedata.listing.address.Country);
-          setStreet(Responsedata.listing.address.Street);
-          setCity(Responsedata.listing.address.City);
-          setState(Responsedata.listing.address.State);
-          setPostcode(Responsedata.listing.address.Postcode);
-          setBedroom(Responsedata.listing.metadata.bedInfo.Bedrooms);
-          setBed(Responsedata.listing.metadata.bedInfo.Bathrooms);
-          setBathroom(Responsedata.listing.metadata.bedInfo.Bathrooms);
-          setGuest(Responsedata.listing.metadata.bedInfo.Guests);
-          setPrice(Responsedata.listing.price);
-          setTitle(Responsedata.listing.title);
-          setAirConditioningChecked(
-            Responsedata.listing.metadata.otherInfo.AirConditioning
-          );
-          setFreeParkingChecked(
-            Responsedata.listing.metadata.otherInfo.FreeParking
-          );
-          setWifiChecked(Responsedata.listing.metadata.otherInfo.WiFi);
-          setTVChecked(Responsedata.listing.metadata.otherInfo.TV);
-          setKitchenChecked(Responsedata.listing.metadata.otherInfo.Kitchen);
-          setWashingmachineChecked(
-            Responsedata.listing.metadata.otherInfo.WashingMachine
-          );
-          const img0 = Responsedata.listing.thumbnail;
-          setThumbil(img0);
-          setLoading(true);
-        })
-        .catch((error) => {
-          setOpenSnackbar({
-            severity: 'error',
-            message: meetError(error),
-          });
-          setOpenSnackbar({
-            severity: 'error',
-            message: '',
-          });
-          return null; // 处理错误，返回一个默认值
+    // get the token from the local storage
+    const token = localStorage.getItem('token') || '';
+    //
+    callAPIget('listings/' + HostingId, token)
+      .then((response) => {
+        // set all the data from the response
+        const Responsedata = response as ApiResponse;
+        console.log(Responsedata.listing);
+        setType(Responsedata.listing.metadata.type);
+        setCountry(Responsedata.listing.address.Country);
+        setStreet(Responsedata.listing.address.Street);
+        setCity(Responsedata.listing.address.City);
+        setState(Responsedata.listing.address.State);
+        setPostcode(Responsedata.listing.address.Postcode);
+        setBedroom(Responsedata.listing.metadata.bedInfo.Bedrooms);
+        setBed(Responsedata.listing.metadata.bedInfo.Bathrooms);
+        setBathroom(Responsedata.listing.metadata.bedInfo.Bathrooms);
+        setGuest(Responsedata.listing.metadata.bedInfo.Guests);
+        setPrice(Responsedata.listing.price);
+        setTitle(Responsedata.listing.title);
+        setAirConditioningChecked(
+          Responsedata.listing.metadata.otherInfo.AirConditioning
+        );
+        setFreeParkingChecked(
+          Responsedata.listing.metadata.otherInfo.FreeParking
+        );
+        setWifiChecked(Responsedata.listing.metadata.otherInfo.WiFi);
+        setTVChecked(Responsedata.listing.metadata.otherInfo.TV);
+        setKitchenChecked(Responsedata.listing.metadata.otherInfo.Kitchen);
+        setWashingmachineChecked(
+          Responsedata.listing.metadata.otherInfo.WashingMachine
+        );
+        const img0 = Responsedata.listing.thumbnail;
+        setThumbil(img0);
+      })
+      .catch((error) => {
+        // set the error message
+        setOpenSnackbar({
+          severity: 'error',
+          message: meetError(error),
         });
-    }
+        setOpenSnackbar({
+          severity: 'error',
+          message: '',
+        });
+        // return the null
+        return null;
+      });
   }, []);
+  // initial the facilities
   const items: {
     [key: string]: boolean;
   } = {
@@ -561,15 +580,21 @@ export const PublishPage = () => {
     AirConditioning: isAirConditioningChecked,
     FreeParking: isFreeParkingChecked,
   };
+  // filter the facilities with true value
   const trueKeys = Object.keys(items).filter((key) => {
     return items[key] === true;
   });
+  // if the facilities is empty, set the no additional facilities
   if (trueKeys.length === 0) {
     trueKeys.push('No additional Facilities');
   }
+  // when click this button, it will open the confirm dialog
   const PublishNow = () => {
+    // initial confirm dialog to true
     let checkFlag = true;
+    // if the daternage is valid, then set the confirm dialog to true
     if (FirstStart && FirstEnd && Firstdistance !== 0) {
+      // check the range is a valid range
       if (FirstStart < FirstEnd) {
         data.push({
           startDate: FirstStart || null,
@@ -577,15 +602,18 @@ export const PublishPage = () => {
           distance: Firstdistance,
         });
       } else {
+        // if the range is not valid, set the confirm dialog to false
         checkFlag = false;
         setEC('StartDate must Before the EndDate');
       }
     } else {
       checkFlag = false;
+      // if the range is not valid, set the confirm dialog to false
       setEC(
         'There exist some date not choose, and For all interval start and end date can not be same'
       );
     }
+    // check each range is valid or not
     timeIntervals.forEach((item) => {
       if (item.startDate && item.endDate && item.distance !== 0) {
         if (item.startDate < item.endDate) {
@@ -605,14 +633,17 @@ export const PublishPage = () => {
         );
       }
     });
+    // if the confirm dialog is true, then open the confirm dialog
     if (checkFlag) {
       console.log(data);
       setOpen(true);
       setEC('');
     } else {
+      // if the confirm dialog is false, set the data to empty
       setData([]);
     }
   };
+  // set all interval to empty
   const [timeIntervals, setTimeIntervals] = useState<
     {
       id: number;
@@ -621,18 +652,22 @@ export const PublishPage = () => {
       distance: number;
     }[]
   >([]);
+  // initail the first available date
   const [FirstStart, setFirstStart] = useState<Date | null>(null);
   const [FirstEnd, setFirstEnd] = useState<Date | null>(null);
   const [Firstdistance, setDistance] = useState(0);
   const [ErrorContent, setEC] = useState('');
+  // change the first available date
   const FirstStartChange = (date: Date) => {
     setFirstStart(date);
     setDistance(GetDistance(date, FirstEnd));
   };
+  // change the first available date
   const FirstEndChange = (date: Date) => {
     setFirstEnd(date);
     setDistance(GetDistance(FirstStart, date));
   };
+  // add an element to the interval
   const addTimeInterval = () => {
     setTimeIntervals(
       (
@@ -645,7 +680,7 @@ export const PublishPage = () => {
       ) => [
         ...currentInterval,
         {
-          id: Date.now() as number, // 使用时间戳作为唯一标识
+          id: Date.now() as number, // unique id
           startDate: null,
           endDate: null,
           distance: 0,
@@ -653,11 +688,15 @@ export const PublishPage = () => {
       ]
     );
   };
+  // when the start date change, then change the distance
   const handleStartDateChange = (index: number, date: Date) => {
     setTimeIntervals((currentInterval) => {
+      // add the new interval
       const newIntervals = currentInterval ? [...currentInterval] : [];
       const already = newIntervals[index];
+      // check the interval is exist or not
       if (already) {
+        // set the new interval value
         newIntervals[index] = {
           id: already.id,
           startDate: date,
@@ -665,13 +704,18 @@ export const PublishPage = () => {
           distance: GetDistance(date, already.endDate),
         };
       }
+      // return the new interval or not
       return newIntervals || [];
     });
   };
+  // when the end date change, then change the distance
   const handleEndDateChange = (index: number, date: Date) => {
+    // set the new interval value
     setTimeIntervals((currentInterval) => {
+      // get the index of a interval
       const newIntervals = currentInterval ? [...currentInterval] : [];
       const already = newIntervals[index];
+      // update the interval value
       if (already) {
         newIntervals[index] = {
           id: already.id,
@@ -680,14 +724,18 @@ export const PublishPage = () => {
           distance: GetDistance(already.startDate, date),
         };
       }
+      // return the new interval or not
       return newIntervals || [];
     });
   };
+  // when the user want to delete a interval
   const deleteInterval = (id: number) => {
+    // delete the interval by filter the id
     setTimeIntervals((prevIntervals) =>
       prevIntervals.filter((interval) => interval.id !== id)
     );
   };
+  // return the content of the page
   const conponment = (
     <CreatChannelOverall>
       <HiddenConfirmCreat>
@@ -844,12 +892,3 @@ export const PublishPage = () => {
   );
   return conponment;
 };
-// export default function BasicDatePicker () {
-//   return (
-//     <LocalizationProvider dateAdapter={AdapterDayjs}>
-//       <DemoContainer components={['DatePicker']}>
-//         <DatePicker label="Basic date picker" />
-//       </DemoContainer>
-//     </LocalizationProvider>
-//   );
-// }

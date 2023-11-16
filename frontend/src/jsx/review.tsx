@@ -5,6 +5,7 @@ import { meetError, ErrorContext } from '../App';
 import Rating from '@mui/material/Rating';
 import { callAPIput } from './API';
 import dayjs from 'dayjs';
+// css part
 const LoginOverAll = styled('div')({
   justifyContent: 'center',
   alignItems: 'center',
@@ -127,39 +128,56 @@ const LoginButton = styled('button')({
     color: 'white',
   },
 });
+// css part end
+// interface part
 interface ReviewPart {
   refresh: () => void;
 }
+// interface part end
+// function part
+// this part is for add review
 export const AddReview: React.FC<ReviewPart> = ({ refresh }) => {
+  // get the error context
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
     return null;
   }
+  // get the error context end
   const { setOpenSnackbar } = ErrorValue;
-
+  // get the token
+  // inital the scroll state to true
   localStorage.setItem('scroll', 't');
+  // inital the score
   const [score, setScore] = useState(0);
+  // ininit the content
   const [content, setContent] = useState('');
+  // use navigate
   const navigate = useNavigate();
+  // get the hosting id
   const { HostingId } = useParams();
+  // this button is for close the login page
   const CloseLoginPage = () => {
     const currentPath = window.location.pathname;
-    // 找到最后一个 / 的索引
+    // find the last / index
     const lastSlashIndex = currentPath.lastIndexOf('/');
+    // if the last / index is not -1
     if (lastSlashIndex !== -1) {
-      // 去掉最后一个 /
+      // get the new path
       const newPath = currentPath.slice(0, lastSlashIndex);
-      // 导航到新路径
+      // navigate to the new path
       navigate(newPath);
     }
+    // after 1 second, set the scroll to false
     setTimeout(() => {
       localStorage.setItem('scroll', 'f');
     }, 1000);
   };
+  // this part is for handle the content change
   const handdleContentChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setContent(event.target.value);
   };
+  // this part is for handle the rating change
   const handleRatingChange = (
     _event: ChangeEvent<NonNullable<unknown>>,
     newValue: number | null
@@ -170,10 +188,13 @@ export const AddReview: React.FC<ReviewPart> = ({ refresh }) => {
       setScore(0);
     }
   };
+  // this part is for add review
   const addreview = () => {
+    // get the logged user email
     const logEmail = localStorage.getItem('LoggedUserEmail');
-    console.log(logEmail);
+    // if the email is not null
     if (logEmail) {
+      // inital the put data
       const data = {
         review: {
           owner: logEmail,
@@ -182,37 +203,45 @@ export const AddReview: React.FC<ReviewPart> = ({ refresh }) => {
           time: dayjs(),
         },
       };
-      console.log(data);
+      // if the content is not empty
       if (data) {
+        // if the content is empty, set the content to a default value
         if (data.review.content === '') {
           data.review.content = 'A good experience!';
         }
-        console.log(data);
+        // get the booking id and token
         const BookingId = localStorage.getItem('BookingId') || '';
         const token = localStorage.getItem('token') || '';
+        // call the api to add review
         callAPIput(
           'listings/' + HostingId + '/review/' + BookingId,
           data,
           token
         )
           .then(() => {
+            // if the review is added, set the snackbar
             setOpenSnackbar({
               severity: 'success',
               message: 'Thanks for your feedback！',
             });
+            // set the snackbar
             setOpenSnackbar({
               severity: 'success',
               message: '',
             });
+            // refresh the page
             refresh();
+            // close the login page
             CloseLoginPage();
           })
           .catch((error) => {
+            // if the review is not added, set the snackbar
             const content = meetError(error);
             setOpenSnackbar({
               severity: 'error',
               message: content,
             });
+            // set the snackbar
             setOpenSnackbar({
               severity: 'error',
               message: '',
