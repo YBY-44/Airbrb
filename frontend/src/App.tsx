@@ -22,7 +22,14 @@ import {
   Route,
   Routes,
 } from 'react-router-dom';
-import { callAPIpost, CallAPIPostWithToken, GlobalSnackbar } from './jsx/API';
+import {
+  callAPIpost,
+  CallAPIPostWithToken,
+  GlobalSnackbar,
+  meetError,
+  ErrorContext,
+  ErrorProvider
+} from './jsx/API';
 import {
   SmallHostPage,
   LargeHostPage,
@@ -38,42 +45,7 @@ import {
 } from './jsx/get_all_listing';
 import InputAdornment from '@mui/material/InputAdornment';
 import { styled } from '@mui/material';
-// when meet error then show the error
-export const meetError = (error: string) => {
-  console.log(error);
-  let errorText = '';
-  // switch case to show the error
-  switch (error) {
-    case 'info':
-      errorText = 'Incorrect input data!';
-      break;
-    case 'access':
-      errorText = 'No permission, please log in first!';
-      break;
-    default:
-      errorText = 'Network error! Please try again.';
-      break;
-  }
-  return errorText;
-};
-// when meet error then show the error
-export const meetErrorLog = (error: string) => {
-  console.log(error);
-  let errorText = '';
-  // switch case to show the error
-  switch (error) {
-    case 'info':
-      errorText = 'Invalid username or password !';
-      break;
-    case 'access':
-      errorText = 'No permission, please log in first!';
-      break;
-    default:
-      errorText = 'Network error! Please try again.';
-      break;
-  }
-  return errorText;
-};
+import { LogPage } from './jsx/Login';
 // Login model
 interface LoginModels {
   isOpen: boolean;
@@ -92,10 +64,10 @@ const HiddenBtn = styled('button')({
 });
 const FilterBar = styled('img')({
   display: 'flex',
-  width: '40px',
-  height: '40px',
+  width: '15px',
+  height: '15px',
   padding: '10px',
-  marginRight: '10px',
+  marginRight: '20px',
   objectFit: 'cover',
   borderRadius: '30px',
   border: '1px solid rgb(112, 112, 112)',
@@ -357,7 +329,7 @@ const LoginCloseButton = styled('button')({
   border: '0px',
   backgroundColor: 'white',
   color: 'rgb(100, 100, 100)',
-  margin: '0px 0px 0px 0px',
+  margin: '6px 0px 0px 5px',
   padding: '0px',
   height: '30px',
   display: 'flex',
@@ -427,16 +399,17 @@ const FormCheckbox = styled('input')({
 });
 const FormControl = styled('input')({
   display: 'block',
-  width: '100%',
-  padding: '0.375rem 0.75rem',
-  fontSize: '1rem',
+  width: '95%',
+  padding: '5px 5px',
+  marginTop: '5px',
+  fontSize: '16px',
   fontWeight: '400',
   lineHeight: '1.5',
-  color: 'var(--bs-body-color)',
+  color: 'black',
   MozAppearance: 'none',
-  backgroundColor: 'var(--bs-body-bg)',
-  border: 'var(--bs-border-width) solid var(--bs-border-color)',
-  borderRadius: 'var(--bs-border-radius)',
+  backgroundColor: 'white',
+  border: '1px solid rgb(220,220,220)',
+  borderRadius: '5px',
 });
 const LoginButton = styled('button')({
   marginTop: '20px',
@@ -455,163 +428,6 @@ const LoginButton = styled('button')({
     color: 'white',
   },
 });
-const LogPage = () => {
-  // context
-  const ErrorValue = useContext(ErrorContext);
-  if (!ErrorValue) {
-    // Handle the case where contextValue is null (optional)
-    return null;
-  }
-  const { setOpenSnackbar } = ErrorValue;
-  // inital check state
-  const [checked, setChecked] = useState(false);
-  // inital login emial
-  const currentEmail = localStorage.getItem('RegistedUserEmail');
-  const [logEmail, setLogEmail] = useState(currentEmail || '');
-  // when email change
-  const handleLogEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setLogEmail(event.target.value);
-  };
-  // intial password
-  const [logPwd, setLogPwd] = useState('');
-  // when password change
-  const handleLogPwdChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setLogPwd(event.target.value);
-  };
-  // initial error message
-  const [contentMsg, setcontentMsg] = useState('');
-  const navigate = useNavigate();
-  // remove email when focus
-  const InputFocus = () => {
-    localStorage.removeItem('RegistedUserEmail');
-  };
-  // remove email when click close button
-  const CloseLoginPage = () => {
-    localStorage.removeItem('RegistedUserEmail');
-    navigate('/');
-  };
-  // initial see password state
-  const [isSee, setIsSee] = useState(false);
-  // change see password state
-  const ChangeSee = () => {
-    setIsSee(!isSee);
-  };
-  // when click login button
-  const LoginClick = () => {
-    let LoginFlag = true;
-    // check email and password
-    const data = {
-      email: logEmail,
-      password: logPwd,
-    };
-    // check email and password
-    if (data.email.length <= 0) {
-      LoginFlag = false;
-      setcontentMsg('Email can not be nothing');
-    } else if (data.password.length <= 7 || data.password.length >= 21) {
-      LoginFlag = false;
-      setcontentMsg('Password length incorrect');
-    }
-    type ApiResponse = {
-      token: string;
-    };
-    // if email and password correct
-    if (LoginFlag) {
-      // call api to login
-      callAPIpost('user/auth/login', data)
-        .then((response) => {
-          // set checked state
-          setChecked(true);
-          // set token and email to localstorage
-          const token = (response as ApiResponse).token;
-          console.log(response);
-          setTimeout(() => {
-            navigate('/user/' + data.email);
-          }, 200);
-          localStorage.setItem('LoggedUserEmail', data.email);
-          localStorage.setItem('token', String(token));
-          // set open snackbar
-          setOpenSnackbar({
-            severity: 'success',
-            message: 'Welcome ' + data.email + ' !',
-          });
-          setOpenSnackbar({
-            severity: 'success',
-            message: '',
-          });
-        })
-        .catch((error) => {
-          // when meet error
-          setOpenSnackbar({
-            severity: 'error',
-            message: meetErrorLog(error),
-          });
-          setOpenSnackbar({
-            severity: 'error',
-            message: '',
-          });
-          // show error message
-          setcontentMsg(meetErrorLog(error));
-        });
-    }
-  };
-  return (
-    <div>
-      <LoginOverAll></LoginOverAll>
-      <LoginBlock>
-        <LoginHeader>
-          <LoginCloseButton type='button' onClick={CloseLoginPage}>
-            ×
-          </LoginCloseButton>
-          <LoginHeadText>Log into Aribrb</LoginHeadText>
-        </LoginHeader>
-        <LoginCenterPart>
-          <LoginInputBlock id='log-email'>
-            <FormLabel>Email</FormLabel>
-            <FormControl
-              id='login-email'
-              onFocus={InputFocus}
-              onChange={handleLogEmailChange}
-              value={logEmail}
-            ></FormControl>
-            <LoginFormText>
-              Your email must be a valid email address so that we can contact
-              you if necessary.
-            </LoginFormText>
-          </LoginInputBlock>
-          <LoginInputBlock id='log-pwd'>
-            <FormLabel>Password</FormLabel>
-            <FormControl
-              id='login-pwd'
-              type={isSee ? 'text' : 'password'}
-              aria-describedby='passwordHelpBlock'
-              value={logPwd}
-              onChange={handleLogPwdChange}
-            ></FormControl>
-            <FormCheckbox
-              type='checkbox'
-              value=''
-              onClick={ChangeSee}
-            ></FormCheckbox>
-            <FormLabel> Show your password</FormLabel>
-            <LoginFormText>
-              Your password must be 8-20 characters long, contain letters and
-              numbers, and must not contain spaces, special characters, or
-              emoji.
-            </LoginFormText>
-          </LoginInputBlock>
-          <ErrorLabel id='message' checked={checked}>
-            {contentMsg}
-          </ErrorLabel>
-          <LoginButton id='login-button' type='button' onClick={LoginClick}>
-            Login
-          </LoginButton>
-        </LoginCenterPart>
-      </LoginBlock>
-    </div>
-  );
-};
-
 const RegistPage = () => {
   // context
   const ErrorValue = useContext(ErrorContext);
@@ -853,9 +669,9 @@ const SmallHomeHeadInputInner = styled('div')({
   transition: '0.3s',
   border: '1px solid rgb(221, 221, 221)',
   borderRadius: '30px',
-  padding: '7px',
+  padding: '0px',
   width: '90%',
-  height: '60%',
+  height: '55%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -868,9 +684,10 @@ const SmallHomeHeadInput = styled('input')({
   fontSize: '15px',
   borderRadius: '10px',
   width: '90%',
-  height: '100%',
   padding: '8px 8px 10px 10px',
+  margin: '0px 0px 0px 10px',
   border: '0px',
+  outline: 'none',
   justifyContent: 'center',
   '&::placeholder': {
     color: 'rgb(131, 131, 131)',
@@ -879,15 +696,16 @@ const SmallHomeHeadInput = styled('input')({
 const SmallHomeHeadsearch = styled('div')({
   alignItems: 'center',
   justifyContent: 'center',
-  height: '100%',
-  marginLeft: '7px',
+  width: '30px',
+  height: '30px',
+  margin: '7px',
   borderRadius: '30px',
   backgroundColor: 'rgb(0, 149, 255)',
 });
-
 const SmallHomeHeadsearchimg = styled('img')({
-  height: '100%',
+  height: '50%',
   cursor: 'pointer',
+  objectFit: 'cover',
   padding: '8px',
 });
 
@@ -969,6 +787,10 @@ const FliterBottomPart = styled('div')({
   backgroundColor: 'white',
   width: '100%',
   overflowY: 'scroll',
+});
+export const P1 = styled('p')({
+  margin: '0px',
+  fontWeight: '700',
 });
 // css part
 // filter part set the price input length up to 5
@@ -1483,11 +1305,11 @@ const SmallHomePage = () => {
       <SmallHomeBottom>
         <SmallBottomButtonOuter>
           <SmallButtomButton1 src='/img/search.png'></SmallButtomButton1>
-          <p>Explore</p>
+          <P1>Explore</P1>
         </SmallBottomButtonOuter>
         <SmallBottomButtonOuter onClick={goesHost}>
           <SmallButtomButton1 src='/img/hosting.png'></SmallButtomButton1>
-          <p>Hosting</p>
+          <P1>Hosting</P1>
         </SmallBottomButtonOuter>
         <Routes>
           <Route
@@ -1495,7 +1317,7 @@ const SmallHomePage = () => {
             element={
               <SmallBottomButtonOuter onClick={ClickProfile}>
                 <SmallButtomButton2 src='/img/logged.png'></SmallButtomButton2>
-                <p>Profile</p>
+                <P1>Profile</P1>
               </SmallBottomButtonOuter>
             }
           />
@@ -1504,7 +1326,7 @@ const SmallHomePage = () => {
             element={
               <SmallBottomButtonOuter onClick={ClickProfile}>
                 <SmallButtomButton2 src='/img/profile.png'></SmallButtomButton2>
-                <p>Log in</p>
+                <P1>Log in</P1>
               </SmallBottomButtonOuter>
             }
           />
@@ -1538,6 +1360,7 @@ export const LargeHomeHeadLogoContent = styled('img')({
   cursor: 'pointer',
 });
 export const LargeHomeHeadSearchContent = styled('div')({
+  margin: '0px 0px 0px 0px',
   justifyContent: 'center',
   alignItems: 'center',
   height: '100%',
@@ -1552,7 +1375,7 @@ export const LargeHomeHeadInputInner = styled('div')({
   padding: '7px',
   width: '90%',
   maxWidth: '500px',
-  height: '60%',
+  height: '40%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -1565,9 +1388,10 @@ export const LargeHomeHeadInput = styled('input')({
   fontSize: '15px',
   borderRadius: '10px',
   width: '90%',
-  height: '100%',
-  padding: '8px 8px 10px 10px',
+  height: '60%',
+  padding: '8px 10px 10px 10px',
   border: '0px',
+  outline: 'none',
   justifyContent: 'center',
   '&::placeholder': {
     color: 'rgb(131, 131, 131)',
@@ -1582,9 +1406,9 @@ export const LargeHomeHeadsearch = styled('div')({
   backgroundColor: 'rgb(0, 149, 255)',
 });
 export const LargeHomeHeadsearchimg = styled('img')({
-  height: '100%',
+  height: '45%',
   cursor: 'pointer',
-  padding: '8px',
+  padding: '10px',
 });
 export const LargeHomeSwitchBar = styled('div')({
   maxWidth: '180px',
@@ -1801,17 +1625,6 @@ interface FilterComp {
   setMaxbed: (value: number) => void;
   setcontent: (value: string) => void;
 }
-// the errorcontext part
-interface SnackbarData {
-  snackbarData: {
-    severity: 'success' | 'error' | 'warning' | 'info';
-    message: string;
-  };
-  setOpenSnackbar: (value: {
-    severity: 'success' | 'error' | 'warning' | 'info';
-    message: string;
-  }) => void;
-}
 // set the context
 export const AppContext = createContext<FilterComp | null>(null);
 const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -1846,28 +1659,7 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
 };
-// set the error context
-type SnackbarDatas = {
-  severity: 'success' | 'error' | 'warning' | 'info';
-  message: string;
-};
-export const ErrorContext = createContext<SnackbarData | null>(null);
-const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [snackbarData, setOpenSnackbar] = useState<SnackbarDatas>({
-    severity: 'success',
-    message: '',
-  });
-  const contextValue = {
-    snackbarData,
-    setOpenSnackbar,
-  };
 
-  return (
-    <ErrorContext.Provider value={contextValue}>
-      {children}
-    </ErrorContext.Provider>
-  );
-};
 const MainDiv = styled('div')({
   display: 'flex',
   flexDirection: 'column',
@@ -1878,7 +1670,6 @@ const MainDiv = styled('div')({
 const MainContent = () => {
   // set the initial values
   localStorage.setItem('scroll', 'f');
-  localStorage.setItem('NewBooking', '');
   const ErrorValue = useContext(ErrorContext);
   if (!ErrorValue) {
     // Handle the case where contextValue is null (optional)
@@ -1930,7 +1721,7 @@ const MainContent = () => {
         <Routes>
           <Route path='/login' element={<LogPage />} />
           <Route path='/register' element={<RegistPage />} />
-          <Route path='*' element={NaN} />
+          <Route path='/' element={<></>} />
         </Routes>
         <Routes>
           <Route

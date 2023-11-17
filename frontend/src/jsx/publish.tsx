@@ -6,7 +6,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useNavigate, useParams } from 'react-router-dom';
-import { meetError, LargeHomeHeadLogoContent, ErrorContext } from '../App';
+import { LargeHomeHeadLogoContent } from '../App';
 import {
   CreatChannelOverall,
   CreatNewHeader,
@@ -17,7 +17,7 @@ import {
   CreatButton,
   QButton,
 } from './Host';
-import { callAPIget, callAPIput, GetDistance } from './API';
+import { callAPIget, callAPIput, GetDistance, meetError, ErrorContext } from './API';
 // interface part
 export interface Availability {
   startDate: Date;
@@ -52,7 +52,7 @@ const CfmContent = styled('div')({
   position: 'absolute',
   zIndex: '4',
   width: '80%',
-  height: '600px',
+  height: '400px',
   backgroundColor: 'rgb(255, 255, 255)',
   borderRadius: '10px',
   boxShadow: '0px 1px 10px 1px rgba(42, 42, 42, 0.5)',
@@ -86,7 +86,7 @@ const CfmCenterContent = styled('div')({
   fontSize: '20px',
   margin: '0px',
   padding: '0px 0px 0px 0px',
-  height: '480px',
+  height: '260px',
   overflowY: 'scroll',
   textAlign: 'center',
   color: 'rgb(0, 0, 0)',
@@ -133,6 +133,7 @@ const CfmHead = styled('p')({
   margin: '20px 60px 0px 0px',
   width: '100%',
   height: '50px',
+  fontWeight: '500',
   textAlign: 'center',
   letterSpacing: '0.2px',
   color: 'rgb(48, 48, 48)',

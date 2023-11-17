@@ -1,10 +1,77 @@
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import config from '../config.json';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, ReactNode } from 'react';
 import { styled } from '@mui/material';
 const port = config.BACKEND_PORT;
+// set the error context
+type SnackbarDatas = {
+  severity: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+};
+interface SnackbarData {
+  snackbarData: {
+    severity: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+  };
+  setOpenSnackbar: (value: {
+    severity: 'success' | 'error' | 'warning' | 'info';
+    message: string;
+  }) => void;
+}
+export const ErrorContext = createContext<SnackbarData | null>(null);
+export const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [snackbarData, setOpenSnackbar] = useState<SnackbarDatas>({
+    severity: 'success',
+    message: '',
+  });
+  const contextValue = {
+    snackbarData,
+    setOpenSnackbar,
+  };
 
+  return (
+    <ErrorContext.Provider value={contextValue}>
+      {children}
+    </ErrorContext.Provider>
+  );
+};
+// when meet error then show the error
+export const meetError = (error: string) => {
+  console.log(error);
+  let errorText = '';
+  // switch case to show the error
+  switch (error) {
+    case 'info':
+      errorText = 'Incorrect input data!';
+      break;
+    case 'access':
+      errorText = 'No permission, please log in first!';
+      break;
+    default:
+      errorText = 'Network error! Please try again.';
+      break;
+  }
+  return errorText;
+};
+// when meet error then show the error
+export const meetErrorLog = (error: string) => {
+  console.log(error);
+  let errorText = '';
+  // switch case to show the error
+  switch (error) {
+    case 'info':
+      errorText = 'Invalid username or password !';
+      break;
+    case 'access':
+      errorText = 'No permission, please log in first!';
+      break;
+    default:
+      errorText = 'Network error! Please try again.';
+      break;
+  }
+  return errorText;
+};
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>((props, ref) => (
   <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />
 ));

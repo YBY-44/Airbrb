@@ -1,6 +1,5 @@
-import { callAPIget } from './API';
+import { callAPIget, meetError, ErrorContext } from './API';
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { meetError, ErrorContext } from '../App';
 import { styled } from '@mui/material';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -45,7 +44,7 @@ const LoginCloseButton = styled('button')({
   border: '0px',
   backgroundColor: 'white',
   color: 'rgb(100, 100, 100)',
-  margin: '0px 0px 0px 0px',
+  margin: '5px 0px 0px 5px',
   padding: '0px',
   height: '30px',
   display: 'flex',
@@ -74,15 +73,15 @@ const LoginCenterPart = styled('div')({
 });
 const ReservingRow = styled('div')({
   width: '100%',
+  padding: '0px 0px 10px 0px',
   flexDirection: 'column',
-  padding: '0px 20px 10px 20px',
   display: 'flex',
   borderBottom: '1px solid rgb(197, 197, 197)',
   justifyContent: 'space-between',
 });
 const DateRange = styled('p')({
   textAlign: 'left',
-  margin: '0px 0px 2px 0px',
+  margin: '0px 0px 2px 20px',
   padding: '0px',
   fontSize: '16px',
 });

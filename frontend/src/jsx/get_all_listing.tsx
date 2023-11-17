@@ -1,6 +1,6 @@
-import { callAPIdelete, callAPIget, callAPIput, GetDistance } from './API';
+import { callAPIdelete, callAPIget, callAPIput, GetDistance, meetError, ErrorContext } from './API';
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { meetError, AppContext, ErrorContext } from '../App';
+import { AppContext } from '../App';
 import { styled } from '@mui/material';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -200,11 +200,10 @@ const PublicListing = styled('div')({
   },
   display: 'flex',
   flexDirection: 'column',
-  padding: '10px',
   cursor: 'pointer',
 });
 const IMGcontainer = styled('div')({
-  width: '100%',
+  padding: '10px 10px 0px 10px',
   position: 'relative',
 });
 const PublicListingImg = styled('img')({
@@ -280,7 +279,6 @@ const ListingRowInDetail = styled('div')({
   width: '100%',
   height: '100px',
   margin: '0px',
-  padding: '0px 0px 0px 20px',
   alignItems: 'center',
   display: 'flex',
   borderBottom: '1px solid rgb(197, 197, 197)',
@@ -311,6 +309,12 @@ const SmallListingImage = styled('img')({
 export const ListingInfo = styled('div')({
   display: 'flex',
   flexDirection: 'column',
+  width: '110px',
+});
+const ListingInfo2 = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  margin: '0px 0px 0px 20px',
   width: '110px',
 });
 const ListingInfoR = styled('div')({
@@ -1889,7 +1893,7 @@ export const GetAllOwnerBookingListing = () => {
       content = data.bookings.map((item, index) => (
         <ListingRowInDetail key={index}>
           <LeftPart>
-            <ListingInfo>
+            <ListingInfo2>
               <ListingType>Your order</ListingType>
               <DateRange>Order id: {item.id}</DateRange>
               <DateRange>
@@ -1898,7 +1902,7 @@ export const GetAllOwnerBookingListing = () => {
                   dayjs(item.dateRange.endDate).format('MM/DD/YYYY')}
               </DateRange>
               <ListingPrice>${item.totalPrice.toFixed(2)} AUD</ListingPrice>
-            </ListingInfo>
+            </ListingInfo2>
           </LeftPart>
           <RightButton>
             <ReviewBlock>
@@ -2216,7 +2220,6 @@ export const GetAllBookingRequest = () => {
             >
               Reject
             </Reject>
-            {/* <ListingBtn>Delete</ListingBtn> */}
           </RightButton>
         </ReservingRow>
       ));

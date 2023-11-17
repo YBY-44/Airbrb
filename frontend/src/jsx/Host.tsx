@@ -10,7 +10,6 @@ import React, {
 import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import {
   LogoutModel,
-  meetError,
   SmallHomePagecss,
   SmallHomeHead,
   LargeHomeHeadLogo,
@@ -24,13 +23,15 @@ import {
   SmallButtomButton1,
   SwitchContent,
   SmallHomeBottom,
-  ErrorContext,
+  P1
 } from '../App';
 import {
   callAPIget,
   CallAPIPostWithToken,
   callAPIput,
   HoverImage,
+  meetError,
+  ErrorContext
 } from './API';
 import { History } from './History';
 import {
@@ -165,7 +166,7 @@ const CfmCenterContent = styled('div')({
   fontSize: '20px',
   margin: '0px',
   padding: '20px 0px 0px 0px',
-  height: '480px',
+  height: '450px',
   overflowY: 'scroll',
   textAlign: 'center',
   color: 'rgb(0, 0, 0)',
@@ -267,6 +268,7 @@ const CfmHead = styled('p')({
   margin: '20px 60px 0px 0px',
   width: '100%',
   height: '50px',
+  fontWeight: '500',
   textAlign: 'center',
   letterSpacing: '0.2px',
   color: 'rgb(48, 48, 48)',
@@ -837,6 +839,7 @@ const QtwoQaswInput = styled('input')({
   fontFamily: 'system-ui',
   fontWeight: '300',
   letterSpacing: '0.2px',
+  outline: 'none',
 });
 const Q3Qasw = styled('div')({
   display: 'flex',
@@ -871,7 +874,7 @@ const Q3QaswInput = styled('input')({
   fontWeight: '300',
   letterSpacing: '0.2px',
   height: '40px',
-  width: '40px',
+  width: '30px',
   border: '1px solid black',
   borderRadius: '10px',
 });
@@ -898,6 +901,7 @@ const Q6Ap = styled('p')({
   display: 'flex',
   alignItems: 'center',
   fontSize: '70px',
+  margin: '0px 10px 0px 10px',
   height: '100px',
 });
 const Q6Asmall = styled('p')({
@@ -913,6 +917,7 @@ const Q6aInput = styled('input')({
   height: '100px',
   width: '240px',
   border: '0px',
+  outline: 'none',
 });
 const Q6aDiv = styled('div')({
   justifyContent: 'center',
@@ -1734,7 +1739,7 @@ export const CreateHosting = () => {
         {ErrorText4 && <CreateError>{errorContent}</CreateError>}
       </Q>
       <Q ref={scrollToQ5}>
-        <Q4q>Now, let‘s give your barn a title</Q4q>
+        <Q4q>Now, lets give your barn a title</Q4q>
         <QtwoQsub>
           Short titles work best. Have fun with it—you can always change it
           later.
@@ -2821,15 +2826,15 @@ export const SmallHostPage = () => {
       <SmallHomeBottom>
         <SmallBottomButtonOuter onClick={goseHome}>
           <SmallButtomButton1 src='/img/search.png'></SmallButtomButton1>
-          <p>Listing</p>
+          <P1>Listing</P1>
         </SmallBottomButtonOuter>
         <SmallBottomButtonOuter onClick={goesHost}>
           <SmallButtomButton1 src='/img/hosting.png'></SmallButtomButton1>
-          <p>Hosting</p>
+          <P1>Hosting</P1>
         </SmallBottomButtonOuter>
         <SmallBottomButtonOuter onClick={goesReservation}>
           <SmallButtomButton1 src='/img/booking.png'></SmallButtomButton1>
-          <p>Reserving</p>
+          <P1>Reserving</P1>
         </SmallBottomButtonOuter>
       </SmallHomeBottom>
     </SmallHomePagecss>

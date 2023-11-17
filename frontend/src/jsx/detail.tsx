@@ -38,14 +38,18 @@ import {
   LargeProfileOuter,
   LargeProfileRightImage,
   AppContext,
-  meetError,
   SmallHomePagecss,
   SmallHomeHead,
   LogoutModelHost,
   SwitchContent,
-  ErrorContext,
 } from '../App';
-import { CallAPIPostWithToken, callAPIget, GetDistance } from './API';
+import {
+  CallAPIPostWithToken,
+  callAPIget,
+  GetDistance,
+  meetError,
+  ErrorContext,
+} from './API';
 import { styled } from '@mui/material';
 import { Availability } from './publish';
 import { GetAllOwnerBookingListing } from './get_all_listing';
@@ -129,7 +133,6 @@ const LogoPath = styled('img')({
 const SmallTitle = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   padding: '20px 10px 0px 30px',
   fontSize: '27px',
   margin: '0px 0px 10px 0px',
@@ -141,7 +144,6 @@ const SmallTitle = styled('p')({
 const SmallType = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '20px 10px 0px 30px',
   fontSize: '20px',
@@ -154,7 +156,6 @@ const SmallType = styled('p')({
 const SmallTitle2 = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '0px 10px 0px 30px',
   margin: '0px',
@@ -167,7 +168,6 @@ const SmallTitle2 = styled('p')({
 const SmallTitle3 = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '0px 0px 0px 30px',
   margin: '0px',
@@ -219,10 +219,9 @@ const ReviewContentSmall = styled('p')({
 const ReviewContentLarge = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '0px',
-  margin: '0px 0px 0px 0px',
+  margin: '0px 30px 0px 30px',
   fontSize: '15px',
   justifyContent: 'left',
   display: 'flex',
@@ -231,10 +230,9 @@ const ReviewContentLarge = styled('p')({
 const ReviewDateSmall = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '0px',
-  margin: '0px',
+  margin: '0px 30px 0px 30px',
   fontSize: '15px',
   color: 'rgb(90,90,90)',
   justifyContent: 'left',
@@ -296,7 +294,7 @@ const CfmCenterContent = styled('div')({
   fontSize: '20px',
   margin: '0px',
   padding: '20px 0px 0px 0px',
-  height: '420px',
+  height: '400px',
   overflowY: 'scroll',
   textAlign: 'center',
   color: 'rgb(0, 0, 0)',
@@ -415,7 +413,6 @@ const SpecificCenter = styled('div')({
   width: '100%',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
   alignContent: 'center',
   overflow: 'scroll',
 });
@@ -623,7 +620,6 @@ const InvalidDate = styled('p')({
 const LargeTitle = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '20px 10px 5px 30px',
   fontSize: '24px',
@@ -635,7 +631,6 @@ const LargeTitle = styled('p')({
 const LargeType = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '20px 10px 0px 30px',
   margin: '0px',
@@ -646,7 +641,6 @@ const LargeType = styled('p')({
   fontWeight: '500',
 });
 const LargeImagePart = styled('div')({
-  width: '100%',
   maxWidth: '1300px',
   justifyContent: 'center',
   padding: '0px 20px 0px 20px',
@@ -657,7 +651,6 @@ const LargeImagePart = styled('div')({
 const LargeHouseInfo = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '0px 0px 0px 30px',
   margin: '0px',
@@ -683,7 +676,6 @@ const LargeFac = styled('div')({
 const SmallFac = styled('div')({
   margin: '20px 0px 0px 0px',
   maxWidth: '1300px',
-  width: '100%',
   display: 'flex',
   flexDirection: 'column',
 });
@@ -748,7 +740,6 @@ const LargeBook = styled('div')({
   boxShadow: '0px 1px 10px 1px rgba(164, 164, 164, 0.5)',
 });
 const SmallBook = styled('div')({
-  width: '90%',
   display: 'flex',
   flexDirection: 'column',
   padding: '20px 20px 0px 20px',
@@ -807,16 +798,15 @@ const LargeReviewPart = styled('div')({
 const SmallReviewPart = styled('div')({
   maxWidth: '1300px',
   minWidth: '200px',
-  width: '90%',
+  width: '100%',
   margin: '20px 0px 20px 0px',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'left',
 });
 const ReviewEachBlockSmall = styled('div')({
-  width: '100%',
   margin: '10px 0px 0px 0px',
-  paddingBottom: '10px',
+  padding: '10px 20px 10px 20px',
   borderBottom: '1px solid rgb(220,220,220)',
   display: 'flex',
   flexDirection: 'column',
@@ -824,7 +814,7 @@ const ReviewEachBlockSmall = styled('div')({
 const ReviewEachBlockLarge = styled('div')({
   width: '100%',
   margin: '0px 0px 0px 0px',
-  padding: '10px 30px 10px 30px',
+  padding: '10px 0px 10px 0px',
   borderBottom: '1px solid rgb(220,220,220)',
   display: 'flex',
   flexDirection: 'column',
@@ -836,11 +826,11 @@ const ReviewHeaderSmall = styled('div')({
 const ReviewHeaderLarge = styled('div')({
   display: 'flex',
   alignItems: 'center',
+  margin: '0px 30px 0px 30px',
 });
 const LargeAddress = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   padding: '15px 0px 10px 25px',
   margin: '0px 0px 0px 0px',
@@ -853,7 +843,6 @@ const LargeAddress = styled('p')({
 const SmallAddress = styled('p')({
   fontFamily: 'Segoe UI',
   textAlign: 'left',
-  width: '100%',
   maxWidth: '1300px',
   color: 'rgb(90, 90, 90)',
   padding: '0px 0px 20px 30px',
@@ -964,7 +953,9 @@ export const ConfirmBook: React.FC<ConfirmBookProps> = ({
           const bookingId = response as { bookingId: string };
           console.log(bookingId.bookingId);
           // refresh the new booking id
+          console.log(localStorage.getItem('NewBooking'));
           localStorage.setItem('NewBooking', bookingId.bookingId);
+          console.log(localStorage.getItem('NewBooking'));
           // set the open snackbar
           setOpenSnackbar({
             severity: 'success',

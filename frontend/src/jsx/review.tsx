@@ -1,9 +1,8 @@
 import { styled } from '@mui/material';
 import React, { useState, ChangeEvent, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { meetError, ErrorContext } from '../App';
 import Rating from '@mui/material/Rating';
-import { callAPIput } from './API';
+import { callAPIput, meetError, ErrorContext } from './API';
 import dayjs from 'dayjs';
 // css part
 const LoginOverAll = styled('div')({
