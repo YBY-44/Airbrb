@@ -3,7 +3,6 @@ import React from 'react';
 import { mount } from 'cypress/react';
 import { LogPage } from './Login';
 import { ErrorContext } from './API'; // Update the path accordingly
-
 import { BrowserRouter as Router } from 'react-router-dom';
 
 describe('<LogPage />', () => {

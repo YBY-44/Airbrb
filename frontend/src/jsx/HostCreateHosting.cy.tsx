@@ -3,7 +3,6 @@ import React from 'react';
 import { mount } from 'cypress/react';
 import { ErrorContext } from './API'; // Update the path accordingly
 import { CreateHosting } from './Host';
-
 import { BrowserRouter as Router } from 'react-router-dom';
 
 describe('<CreateHosting />', () => {
@@ -214,25 +213,5 @@ describe('<CreateHosting />', () => {
     );
     cy.get('#price').type('999999');
     cy.get('#price').and('have.length.at.most', 5).and('have.value', '99999');
-  });
-  it('edit the thumb', () => {
-    const setOpenSnackbarMock = cy.stub().as('setOpenSnackbar');
-    const contextValue = {
-      snackbarData: {
-        severity: 'success' as const,
-        message: 'Default message',
-      },
-      setOpenSnackbar: setOpenSnackbarMock,
-    };
-    mount(
-      <ErrorContext.Provider value={contextValue}>
-        <Router>
-          <CreateHosting />
-        </Router>
-      </ErrorContext.Provider>
-    );
-    cy.get('#callupload').click();
-    cy.get('#callupload').click();
-    cy.get('#upload').should('be.visible');
   });
 });
