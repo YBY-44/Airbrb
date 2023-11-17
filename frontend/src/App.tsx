@@ -213,7 +213,7 @@ export const LogoutModelHost: React.FC<LogoutModels> = ({ isOpen, close }) => {
         close();
         navigate('/');
       })
-      .catch((error) => {
+      .catch((error: string) => {
         // prompt the error message
         setOpenSnackbar({ severity: 'error', message: meetError(error) });
         setOpenSnackbar({
@@ -266,7 +266,7 @@ export const LogoutModel: React.FC<LogoutModels> = ({ isOpen, close }) => {
         console.log('logout');
         navigate('/');
       })
-      .catch((error) => {
+      .catch((error: string) => {
         // prompt the error message
         setOpenSnackbar({ severity: 'error', message: meetError(error) });
         setOpenSnackbar({ severity: 'error', message: '' });
@@ -291,7 +291,7 @@ const LoginOverAll = styled('div')({
   width: '100%',
   height: '100%',
   display: 'flex',
-  zIndex: '1',
+  zIndex: '2',
   position: 'absolute',
   backgroundColor: 'rgb(0, 0, 0)',
   opacity: '0.4',
@@ -540,7 +540,7 @@ const RegistPage = () => {
           );
         })
         // if regist fail
-        .catch((error) => {
+        .catch((error: string) => {
           // set checked state
           console.log(error);
           if (error === 'info') {
@@ -837,13 +837,13 @@ const Filterblock = styled('div')({
 const FilterT1 = styled('div')({
   fontWeight: '500',
   fontSize: '20px',
-  padding: '0px',
+  padding: '0px 0px 0px 20px',
   margin: '0px',
 });
 const FilterT2 = styled('div')({
-  fontWeight: '300',
+  fontWeight: '400',
   fontSize: '14px',
-  padding: '0px 0px 30px 0px',
+  padding: '0px 0px 30px 20px',
   margin: '0px',
 });
 const PriceP = styled('div')({

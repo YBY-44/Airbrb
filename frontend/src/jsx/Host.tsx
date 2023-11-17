@@ -1530,7 +1530,7 @@ export const CreateHosting = () => {
             id='House'
             onClick={ChangeType}
           ></QoneSelect>
-          <QoneShowSelect htmlFor='House' checked={HostingType === 'House'}>
+          <QoneShowSelect htmlFor='House' id = 'Hous' checked={HostingType === 'House'}>
             House
           </QoneShowSelect>
           <QoneSelect
@@ -1541,6 +1541,7 @@ export const CreateHosting = () => {
           />
           <QoneShowSelect
             htmlFor='Apartment'
+            id = 'Apart'
             checked={HostingType === 'Apartment'}
           >
             Apartment
@@ -1551,7 +1552,7 @@ export const CreateHosting = () => {
             id='Cabin'
             onClick={ChangeType}
           />
-          <QoneShowSelect htmlFor='Cabin' checked={HostingType === 'Cabin'}>
+          <QoneShowSelect id='caBIN' htmlFor='Cabin' checked={HostingType === 'Cabin'}>
             Cabin
           </QoneShowSelect>
           <QoneSelect
@@ -1560,13 +1561,13 @@ export const CreateHosting = () => {
             id='Hotel'
             onClick={ChangeType}
           />
-          <QoneShowSelect htmlFor='Hotel' checked={HostingType === 'Hotel'}>
+          <QoneShowSelect htmlFor='Hotel' id='Hot' checked={HostingType === 'Hotel'}>
             Hotel
           </QoneShowSelect>
         </QoneAnswerPart>
         {ErrorText1 && <CreateError>{errorContent}</CreateError>}
       </Q1>
-      <Q ref={scrollToQ2}>
+      <Q ref={scrollToQ2} id='Q2'>
         <QtwoQ>Tell us about your address</QtwoQ>
         <QtwoQsub>
           Your address is only shared with guests after they’ve made a
@@ -1616,7 +1617,7 @@ export const CreateHosting = () => {
         </QtwoQasw>
         {ErrorText2 && <CreateError>{errorContent}</CreateError>}
       </Q>
-      <Q ref={scrollToQ3}>
+      <Q ref={scrollToQ3} id='Q3'>
         <QtwoQ>Share some basics about your place</QtwoQ>
         <QtwoQsub>You’ll add more details later, like bed types.</QtwoQsub>
         <Q3Qasw>
@@ -1630,7 +1631,7 @@ export const CreateHosting = () => {
               onChange={handleGuestChange}
             ></Q3QaswInput>
           </Q3Qaswrow>
-          <Q3Qaswrow tabIndex={0}>
+          <Q3Qaswrow tabIndex={0} id='Q4'>
             <Q3QaswLable>Bedrooms</Q3QaswLable>
             <Q3QaswInput
               placeholder='1'
@@ -1663,7 +1664,7 @@ export const CreateHosting = () => {
         </Q3Qasw>
         {ErrorText3 && <CreateError>{errorContent}</CreateError>}
       </Q>
-      <Q ref={scrollToQ4}>
+      <Q ref={scrollToQ4} id='Q4'>
         <Q4q>Tell guests what your place has to offer</Q4q>
         <QtwoQsub>
           You can add more amenities after you publish your listing.
@@ -1675,7 +1676,7 @@ export const CreateHosting = () => {
             id='WiFi'
             onChange={() => setWifiChecked(!isWifiChecked)}
           />
-          <QfourShowSelect htmlFor='WiFi' checked={isWifiChecked}>
+          <QfourShowSelect id='wifi' htmlFor='WiFi' checked={isWifiChecked}>
             Wi-Fi
           </QfourShowSelect>
           <QoneSelect
@@ -1684,7 +1685,7 @@ export const CreateHosting = () => {
             id='TV'
             onChange={() => setTVChecked(!isTVChecked)}
           />
-          <QfourShowSelect htmlFor='TV' checked={isTVChecked}>
+          <QfourShowSelect htmlFor='TV' id='tv' checked={isTVChecked}>
             TV
           </QfourShowSelect>
           <QoneSelect
@@ -1693,18 +1694,19 @@ export const CreateHosting = () => {
             id='Kitchen'
             onChange={() => setKitchenChecked(!isKitchenChecked)}
           />
-          <QfourShowSelect htmlFor='Kitchen' checked={isKitchenChecked}>
+          <QfourShowSelect htmlFor='Kitchen' id='kitch' checked={isKitchenChecked}>
             Kitchen
           </QfourShowSelect>
 
           <QoneSelect
             type='checkbox'
             name='accommodation'
-            id='Washing machine'
+            id='Washing-machine'
             onChange={() => setWashingmachineChecked(!isWashingmachineChecked)}
           />
           <QfourShowSelect
-            htmlFor='Washing machine'
+            htmlFor='Washing-machine'
+            id='washing-machine'
             checked={isWashingmachineChecked}
           >
             Washing machine
@@ -1712,13 +1714,14 @@ export const CreateHosting = () => {
           <QoneSelect
             type='checkbox'
             name='accommodation'
-            id='Air conditioning'
+            id='Air-conditioning'
             onChange={() =>
               setAirConditioningChecked(!isAirConditioningChecked)
             }
           />
           <QfourShowSelect
-            htmlFor='Air conditioning'
+            htmlFor='Air-conditioning'
+            id='air-cond'
             checked={isAirConditioningChecked}
           >
             Air conditioning
@@ -1726,11 +1729,12 @@ export const CreateHosting = () => {
           <QoneSelect
             type='checkbox'
             name='accommodation'
-            id='Free Parking'
+            id='Free-Parking'
             onChange={() => setFreeParkingChecked(!isFreeParkingChecked)}
           />
           <QfourShowSelect
-            htmlFor='Free Parking'
+            htmlFor='Free-Parking'
+            id='free-parking'
             checked={isFreeParkingChecked}
           >
             Free Parking
@@ -1738,7 +1742,7 @@ export const CreateHosting = () => {
         </QoneAnswerPart>
         {ErrorText4 && <CreateError>{errorContent}</CreateError>}
       </Q>
-      <Q ref={scrollToQ5}>
+      <Q ref={scrollToQ5} id='Q5'>
         <Q4q>Now, lets give your barn a title</Q4q>
         <QtwoQsub>
           Short titles work best. Have fun with it—you can always change it
@@ -1755,7 +1759,7 @@ export const CreateHosting = () => {
         <LengthDetector>{lengthOfTitle}/32</LengthDetector>
         {ErrorText5 && <CreateError>{errorContent}</CreateError>}
       </Q>
-      <Q ref={scrollToQ6}>
+      <Q ref={scrollToQ6} id='Q6'>
         <Q4q>Now, set your price</Q4q>
         <QtwoQsub>You can change it anytime.</QtwoQsub>
         <Q6aDiv>
@@ -1771,7 +1775,7 @@ export const CreateHosting = () => {
         </Q6aDiv>
         {ErrorText6 && <CreateError>{errorContent}</CreateError>}
       </Q>
-      <Q ref={scrollToQ7}>
+      <Q ref={scrollToQ7} id='Q7'>
         <Q4q>Add some photos of your barn</Q4q>
         <QtwoQsub>
           You’ll need one photos to get started. This photo would as your
@@ -1786,6 +1790,7 @@ export const CreateHosting = () => {
             accept='image/*'
           ></QoneSelect>
           <UploadIMG
+            id='callupload'
             onClick={HandleT}
             src={Thumbil || '/img/addusr.png'}
             alt='Upload from your device'
@@ -1793,7 +1798,7 @@ export const CreateHosting = () => {
         </Q7aDiv>
         {ErrorText7 && <CreateError>{errorContent}</CreateError>}
       </Q>
-      <Q>
+      <Q id='Q8'>
         <Q4q>Add more photos of your barn</Q4q>
         <QtwoQsub>
           This is optional if you want show more of your hosting. You can add

@@ -221,6 +221,7 @@ export const LogPage = () => {
       // call api to login
       callAPIpost('user/auth/login', data)
         .then((response) => {
+          setcontentMsg('Log success');
           // set checked state
           setChecked(true);
           // set token and email to localstorage

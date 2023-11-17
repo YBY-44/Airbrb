@@ -123,8 +123,8 @@ export const GetDistance = (startDate: Date | null, endDate: Date | null) => {
   // Check if both start and end dates are provided
   if (startDate && endDate) {
     // Create new Date objects to ensure consistency
-    const date1 = new Date(startDate);
-    const date2 = new Date(endDate);
+    const date1 = new Date(String(startDate));
+    const date2 = new Date(String(endDate));
 
     // Set the time portion of the dates to midnight (UTC)
     date1.setUTCHours(0, 0, 0, 0);

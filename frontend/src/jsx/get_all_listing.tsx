@@ -180,9 +180,9 @@ const Publicstar = styled('img')({
 const PublicreviewRating = styled('p')({
   margin: '0px 0px 0px 3px',
   padding: '0px',
-  fontSize: '15px',
+  fontSize: '13px',
   color: 'black',
-  fontWeight: '300',
+  fontWeight: '350',
   letterSpacing: '0.5px',
 });
 const PublicListing = styled('div')({
@@ -233,12 +233,12 @@ const PublicListingTitle = styled('p')({
 const PublicDate = styled('p')({
   margin: '0px 0px 0px 3px',
   padding: '0px',
-  fontSize: '15px',
+  fontSize: '13px',
   color: 'black',
   textAlign: 'left',
   marginLeft: '20px',
-  letterSpacing: '0.8px',
-  fontWeight: '300',
+  letterSpacing: '0.4px',
+  fontWeight: '400',
 });
 const Publicprice = styled('p')({
   margin: '0px 0px 0px 3px',

@@ -131,7 +131,7 @@ const LogoPath = styled('img')({
   height: '13px',
 });
 const SmallTitle = styled('p')({
-  fontFamily: 'Segoe UI',
+  fontFamily: 'Arial',
   textAlign: 'left',
   padding: '20px 10px 0px 30px',
   fontSize: '27px',
@@ -142,7 +142,7 @@ const SmallTitle = styled('p')({
   fontWeight: '500',
 });
 const SmallType = styled('p')({
-  fontFamily: 'Segoe UI',
+  fontFamily: 'Arial',
   textAlign: 'left',
   maxWidth: '1300px',
   padding: '20px 10px 0px 30px',

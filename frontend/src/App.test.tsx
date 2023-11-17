@@ -25,9 +25,4 @@ test('renders learn react link', () => {
   console.log(screen.debug());
   const elements = screen.queryAllByText(/into Airbrb/i);
   expect(elements.length).toBeGreaterThan(0);
-
-  // // 使用 getByRole 查找按钮
-  // const loginButton = screen.getByRole('button', { name: 'Login' }); // 或者 screen.getByRole('button', { name: 'login' })
-  // // 断言按钮存在于文档中
-  // expect(loginButton).toBeInTheDocument();
 });
