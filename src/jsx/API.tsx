@@ -4,7 +4,7 @@ import config from '../config.json';
 import React, { useState, useEffect, createContext, ReactNode } from 'react';
 import { styled } from '@mui/material';
 const URL_IN = 'https://safe-hollows-34884-7de94ea46ccf.herokuapp.com/';
-const port = config.BACKEND_PORT;
+// const port = config.BACKEND_PORT;
 // set the error context
 type SnackbarDatas = {
   severity: 'success' | 'error' | 'warning' | 'info';
