@@ -1,6 +1,6 @@
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
-import config from '../config.json';
+// import config from '../config.json';
 import React, { useState, useEffect, createContext, ReactNode } from 'react';
 import { styled } from '@mui/material';
 const URL_IN = 'https://safe-hollows-34884-7de94ea46ccf.herokuapp.com/';
