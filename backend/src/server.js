@@ -34,7 +34,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: 'https://boyang-airbrb.netlify.app/'
+  origin: 'https://boyang-airbrb.netlify.app'
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
