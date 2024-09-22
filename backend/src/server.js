@@ -36,9 +36,14 @@ const app = express();
 app.use(cors({
   origin: 'https://boyang-airbrb.netlify.app'
 }));
+app.options('*', cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(morgan(':method :url :status'));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  next();
+});
 
 const catchErrors = (fn) => async (req, res) => {
   try {
