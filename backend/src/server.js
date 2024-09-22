@@ -33,9 +33,7 @@ import {
 const app = express();
 
 // CORS 设置，允许所有域
-app.use(cors({
-  origin: '*' // 允许所有域
-}));
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(morgan(':method :url :status'));
