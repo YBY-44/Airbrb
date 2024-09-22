@@ -31,8 +31,12 @@ import {
 } from './service';
 
 const app = express();
+const corsOptions = {
+  origin: 'https://airbrb-yby.netlify.app',
+  optionsSuccessStatus: 200
+};
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(morgan(':method :url :status'));
