@@ -33,7 +33,7 @@ const update = (users, listings, bookings) =>
           ),
         );
         resolve();
-      } catch {
+      } catch(error) {
         reject(new Error('Writing to database failed'));
       }
     });
@@ -52,7 +52,7 @@ try {
   users = data.users;
   listings = data.listings;
   bookings = data.bookings;
-} catch {
+} catch(error) {
   console.log('WARNING: No database found, create a new one');
   save();
 }
@@ -90,7 +90,7 @@ export const getEmailFromAuthorization = (authorization) => {
       throw new AccessError('Invalid Token');
     }
     return email;
-  } catch {
+  } catch(error) {
     throw new AccessError('Invalid Token');
   }
 };
@@ -201,7 +201,7 @@ export const addListing = (title, email, address, price, thumbnail, metadata) =>
 export const getListingDetails = (listingId) =>
   resourceLock((resolve, reject) => {
     resolve({
-      ...listings[listingId],
+      ...listings[listingId]
     });
   });
 

@@ -1,9 +1,10 @@
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
-import config from '../config.json';
+// import config from '../config.json';
 import React, { useState, useEffect, createContext, ReactNode } from 'react';
 import { styled } from '@mui/material';
-const port = config.BACKEND_PORT;
+const URL_IN = 'https://safe-hollows-34884-7de94ea46ccf.herokuapp.com/';
+// const port = config.BACKEND_PORT;
 // set the error context
 type SnackbarDatas = {
   severity: 'success' | 'error' | 'warning' | 'info';
@@ -225,7 +226,7 @@ export const HoverImage: React.FC<HoverImageProps> = ({
 // all post request send by this question
 export const callAPIpost = (path: string, inputdata: object) => {
   return new Promise((resolve, reject) => {
-    fetch('http://localhost:' + String(port) + '/' + String(path), {
+    fetch(String(URL_IN) + String(path), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(inputdata),
@@ -258,7 +259,7 @@ export const CallAPIPostWithToken = (
   token: string
 ) => {
   return new Promise((resolve, reject) => {
-    fetch('http://localhost:' + String(port) + '/' + String(path), {
+    fetch(String(URL_IN) + String(path), {
       method: 'POST',
       headers: {
         Authorization: String(token),
@@ -294,7 +295,7 @@ export const CallAPIPostWithToken = (
 //  all put request with token send by this message
 export const callAPIput = (path: string, inputdata: object, token: string) => {
   return new Promise((resolve, reject) => {
-    fetch('http://localhost:' + String(port) + '/' + String(path), {
+    fetch(String(URL_IN) + String(path), {
       method: 'PUT',
       headers: {
         Authorization: String(token),
@@ -329,7 +330,7 @@ export const callAPIput = (path: string, inputdata: object, token: string) => {
 // all GET request send by this function
 export const callAPIget = (path: string, token: string) => {
   return new Promise((resolve, reject) => {
-    fetch('http://localhost:' + String(port) + '/' + String(path), {
+    fetch(String(URL_IN) + String(path), {
       method: 'GET',
       headers: {
         Authorization: String(token),
@@ -361,7 +362,7 @@ export const callAPIget = (path: string, token: string) => {
 // All delete request send by this function
 export const callAPIdelete = (path: string, token: string) => {
   return new Promise((resolve, reject) => {
-    fetch('http://localhost:' + String(port) + '/' + String(path), {
+    fetch(String(URL_IN) + String(path), {
       method: 'DELETE',
       headers: {
         Authorization: String(token),
