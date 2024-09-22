@@ -21,9 +21,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
 var app = (0, _express["default"])();
 
 // CORS 设置，允许所有域
-app.use((0, _cors["default"])({
-  origin: '*' // 允许所有域
-}));
+app.use((0, _cors["default"])());
 app.use(_bodyParser["default"].urlencoded({
   extended: true
 }));
@@ -507,7 +505,7 @@ app.use('/docs', _swaggerUiExpress["default"].serve, _swaggerUiExpress["default"
 // const configData = JSON.parse(fs.readFileSync('../frontend/src/config.json'));
 // const port = 'BACKEND_PORT' in configData ? configData.BACKEND_PORT : 5033;
 
-var port = process.env.PORT || 5005;
+var port = 5005;
 var server = app.listen(port, '0.0.0.0', function () {
   console.log("Backend is now listening on port ".concat(port, "!"));
   console.log("For API docs, navigate to http://localhost:".concat(port));
