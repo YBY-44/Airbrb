@@ -31,12 +31,11 @@ import {
 } from './service';
 
 const app = express();
-const corsOptions = {
-  origin: 'https://airbrb-yby.netlify.app',
-  optionsSuccessStatus: 200
-};
-app.options('*', cors(corsOptions)); 
-app.use(cors(corsOptions));
+
+
+app.use(cors({
+  origin: 'https://airbrb-yby.netlify.app'
+}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(morgan(':method :url :status'));
