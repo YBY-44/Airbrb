@@ -3,7 +3,7 @@ import Snackbar from '@mui/material/Snackbar';
 // import config from '../config.json';
 import React, { useState, useEffect, createContext, ReactNode } from 'react';
 import { styled } from '@mui/material';
-const URL_IN = 'https://airbrb-production.up.railway.app/docs/';
+const URL_IN = 'https://airbrb-production.up.railway.app/';
 
 // const port = config.BACKEND_PORT;
 // set the error context
