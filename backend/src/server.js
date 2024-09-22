@@ -32,19 +32,13 @@ import {
 
 const app = express();
 
-
+// CORS 设置，允许所有域
 app.use(cors({
-  origin: 'https://boyang-airbrb.netlify.app'
+  origin: '*' // 允许所有域
 }));
-app.options('*', cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(morgan(':method :url :status'));
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://boyang-airbrb.netlify.app');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  next();
-});
 const catchErrors = (fn) => async (req, res) => {
   try {
     console.log(`Authorization header is ${req.header('Authorization')}`);
