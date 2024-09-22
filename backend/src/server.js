@@ -35,7 +35,7 @@ const corsOptions = {
   origin: 'https://airbrb-yby.netlify.app',
   optionsSuccessStatus: 200
 };
-
+app.options('*', cors(corsOptions)); 
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
