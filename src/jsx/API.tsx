@@ -3,7 +3,8 @@ import Snackbar from '@mui/material/Snackbar';
 // import config from '../config.json';
 import React, { useState, useEffect, createContext, ReactNode } from 'react';
 import { styled } from '@mui/material';
-const URL_IN = 'https://safe-hollows-34884-7de94ea46ccf.herokuapp.com/';
+const URL_IN = 'https://airbrb-production.up.railway.app/docs/';
+
 // const port = config.BACKEND_PORT;
 // set the error context
 type SnackbarDatas = {
