@@ -964,6 +964,8 @@ export const GetAllListing = () => {
     const userId = localStorage.getItem('LoggedUserEmail');
     // if the token is not null, go to the detail page
     if (localStorage.token) {
+      console.log(localStorage.token);
+      console.log('111');
       navigate(`/user/${userId}/listing/${HostingID}/logged`);
     } else {
       navigate(`/listing/${HostingID}`);
@@ -1012,6 +1014,7 @@ export const GetAllListing = () => {
         }
       })
       .catch((error) => {
+        console.log(error);
         // if the component is mounted, set the error
         setOpenSnackbar({
           severity: 'error',
@@ -1029,6 +1032,7 @@ export const GetAllListing = () => {
   useEffect(() => {
     callAPIget('listings', '')
       .then((response) => {
+        console.log(response);
         // set the min price and max price
         const Minp = MinPrice || 1;
         const Maxp = MaxPrice || 99999;
@@ -1055,6 +1059,7 @@ export const GetAllListing = () => {
         }
       })
       .catch((error) => {
+        console.log(error);
         // if the component is mounted, set the error
         setOpenSnackbar({
           severity: 'error',
