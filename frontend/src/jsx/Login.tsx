@@ -243,6 +243,7 @@ export const LogPage = () => {
           });
         })
         .catch((error) => {
+          console.log(error);
           // when meet error
           setOpenSnackbar({
             severity: 'error',
